@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  admin
+  editor
+  author
+  moderator
+}
+
+enum ArticleStatus {
+  draft
+  in_review
+  scheduled
+  published
+  rejected
+  trash
+}
+
+enum ArticleWorkflowStatus {
+  draft
+  in_review
+  scheduled
+  published
+  rejected
+}
+
+enum AuditEntity {
+  article
+  user
+  newsletter
+  auth
+}
+
+enum SubscriberSource {
+  footer
+}
+
+model User {
+  id               String      @id
+  name             String
+  email            String      @unique
+  role             Role
+  passwordHash     String
+  active           Boolean     @default(true)
+  avatar           String
+  bio              Json
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  lastLoginAt      DateTime?
+  articlesAuthored Article[]   @relation("ArticleAuthor")
+  articlesReviewed Article[]   @relation("ArticleReviewer")
+  auditEntries     AuditEntry[]
+
+  @@index([role])
+  @@index([active])
+}
+
+model Article {
+  id             String                @id
+  slug           String                @unique
+  title          Json
+  excerpt        Json
+  body           Json
+  seoTitle       Json
+  seoDescription Json
+  mainImage      String
+  gallery        String[]              @default([])
+  videoUrls      String[]              @default([])
+  authorId       String
+  reviewerId     String?
+  categories     String[]              @default([])
+  tags           String[]              @default([])
+  sourceName     String                @default("")
+  sourceUrl      String                @default("")
+  status         ArticleStatus         @default(draft)
+  previousStatus ArticleWorkflowStatus?
+  showOnHome     Boolean               @default(true)
+  featured       Boolean               @default(false)
+  breaking       Boolean               @default(false)
+  views          Int                   @default(0)
+  readMinutes    Int                   @default(1)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  submittedAt    DateTime?
+  reviewedAt     DateTime?
+  publishedAt    DateTime?
+  scheduledAt    DateTime?
+  deletedAt      DateTime?
+  revision       Int                   @default(0)
+  author         User                  @relation("ArticleAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  reviewer       User?                 @relation("ArticleReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  viewEvents     ArticleView[]
+
+  @@index([authorId])
+  @@index([reviewerId])
+  @@index([status, publishedAt])
+  @@index([status, scheduledAt])
+  @@index([showOnHome, publishedAt])
+  @@index([deletedAt])
+}
+
+model ArticleView {
+  id        String   @id
+  articleId String
+  viewerId  String
+  viewedAt  DateTime @default(now())
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@index([articleId, viewedAt])
+  @@index([viewerId, articleId, viewedAt])
+  @@index([viewedAt])
+}
+
+model AuditEntry {
+  id         String      @id
+  entityType AuditEntity
+  entityId   String
+  action     String
+  actorId    String?
+  actorName  String
+  summary    String
+  timestamp  DateTime    @default(now())
+  actor      User?       @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([timestamp])
+  @@index([entityType, entityId])
+  @@index([actorId])
+}
+
+model Subscriber {
+  id        String           @id
+  email     String           @unique
+  createdAt DateTime         @default(now())
+  source    SubscriberSource @default(footer)
+
+  @@index([createdAt])
+}
