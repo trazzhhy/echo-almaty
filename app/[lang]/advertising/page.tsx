@@ -36,7 +36,7 @@ export default async function AdvertisingPage({
         }
       />
 
-      <div className="space-y-6 rounded-[2rem] border border-border bg-card p-8 text-base leading-8 text-foreground/90">
+      <div className="news-prose-card">
         <p>
           {safeLang === 'ru'
             ? 'Для рекламодателей доступны медийные размещения в ленте, брендированные спецпроекты, а также интеграции в тематических разделах и подборках.'

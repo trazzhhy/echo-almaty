@@ -36,7 +36,7 @@ export default async function PrivacyPolicyPage({
         }
       />
 
-      <div className="space-y-6 rounded-[2rem] border border-border bg-card p-8 text-base leading-8 text-foreground/90">
+      <div className="news-prose-card">
         <p>
           {safeLang === 'ru'
             ? 'Эхо Алматы хранит только те данные, которые пользователь передает добровольно: поисковые запросы, адрес электронной почты для подписки и сообщения, отправленные через редакционные контакты.'

@@ -11,14 +11,12 @@ export function PublicSectionHeading({
   href?: string
 }) {
   return (
-    <div className="mb-5 flex items-end justify-between gap-4 border-b border-border pb-3">
-      <h2 className="font-heading text-2xl font-bold uppercase tracking-tight">
-        {title}
-      </h2>
+    <div className="mb-5 flex items-end justify-between gap-4">
+      <h2 className="news-section-heading">{title}</h2>
       {href && (
         <Link
           href={href}
-          className="text-sm font-medium text-primary transition-colors hover:text-primary/80"
+          className="shrink-0 pb-3 text-sm font-medium text-primary transition-colors hover:text-primary/80"
         >
           {t(lang, 'more')}
         </Link>

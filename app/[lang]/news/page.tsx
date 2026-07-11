@@ -77,18 +77,14 @@ export default async function NewsPage({
         }
       />
 
-      <form className="grid gap-4 rounded-[2rem] border border-border bg-card p-5 lg:grid-cols-4">
+      <form className="news-filter-form lg:grid-cols-4">
         <input
           name="q"
           defaultValue={q}
           placeholder={t(safeLang, 'searchPlaceholder')}
-          className="h-12 rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+          className="news-input"
         />
-        <select
-          name="category"
-          defaultValue={safeCategory}
-          className="h-12 rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
-        >
+        <select name="category" defaultValue={safeCategory} className="news-input">
           <option value="">{t(safeLang, 'allCategories')}</option>
           {categories.map((item) => (
             <option key={item.slug} value={item.slug}>
@@ -96,11 +92,7 @@ export default async function NewsPage({
             </option>
           ))}
         </select>
-        <select
-          name="author"
-          defaultValue={safeAuthor}
-          className="h-12 rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
-        >
+        <select name="author" defaultValue={safeAuthor} className="news-input">
           <option value="">{t(safeLang, 'allAuthors')}</option>
           {authors.map((item) => (
             <option key={item.id} value={item.id}>
@@ -108,26 +100,16 @@ export default async function NewsPage({
             </option>
           ))}
         </select>
-        <select
-          name="sort"
-          defaultValue={safeSort}
-          className="h-12 rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
-        >
+        <select name="sort" defaultValue={safeSort} className="news-input">
           <option value="newest">{t(safeLang, 'sortNewest')}</option>
           <option value="popular">{t(safeLang, 'sortPopular')}</option>
           <option value="oldest">{t(safeLang, 'sortOldest')}</option>
         </select>
-        <div className="flex flex-wrap gap-3 lg:col-span-4">
-          <button
-            type="submit"
-            className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-          >
+        <div className="flex flex-wrap gap-2 lg:col-span-4">
+          <button type="submit" className="news-btn-primary">
             {t(safeLang, 'applyFilters')}
           </button>
-          <Link
-            href={`/${safeLang}/news`}
-            className="rounded-full border border-border px-5 py-3 text-sm font-semibold transition hover:bg-secondary"
-          >
+          <Link href={`/${safeLang}/news`} className="news-btn-secondary">
             {t(safeLang, 'clearFilters')}
           </Link>
         </div>
@@ -140,7 +122,7 @@ export default async function NewsPage({
           </p>
 
           {articles.length === 0 ? (
-            <p className="rounded-3xl border border-dashed border-border px-6 py-16 text-center text-muted-foreground">
+            <p className="border border-dashed border-border px-6 py-14 text-center text-muted-foreground">
               {t(safeLang, 'noResults')}
             </p>
           ) : (

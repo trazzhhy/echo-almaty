@@ -16,74 +16,67 @@ export function HomeHero({
   const category = getCategoryBySlug(lead.categories[0] ?? '')
 
   return (
-    <section className="grid gap-5 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,0.9fr)]">
+    <section className="grid gap-4 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]">
       <Link
         href={`/${lang}/article/${lead.slug}`}
-        className="group relative overflow-hidden rounded-[2rem]"
+        className="group news-divider block bg-card pb-4"
       >
-        <div className="relative aspect-[16/10] overflow-hidden lg:aspect-[16/9]">
+        <div className="relative aspect-[16/9] overflow-hidden bg-muted">
           <Image
             src={lead.mainImage}
             alt={localize(lead.title, lang)}
             fill
             priority
-            sizes="(max-width: 1024px) 100vw, 66vw"
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            sizes="(max-width: 1024px) 100vw, 65vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
           />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
-          <div className="mb-3 flex flex-wrap items-center gap-2 text-xs">
-            {lead.breaking && (
-              <span className="rounded-full bg-destructive px-3 py-1 font-bold uppercase">
-                Breaking
-              </span>
-            )}
+        <div className="pt-4">
+          <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 news-meta">
+            {lead.breaking && <span className="news-breaking">Breaking</span>}
             {category && (
-              <span className="rounded-full bg-accent px-3 py-1 font-bold uppercase text-accent-foreground">
-                {localize(category.name, lang)}
-              </span>
+              <span className="news-category">{localize(category.name, lang)}</span>
             )}
+            <span>
+              {relativeTime(lead.publishedAt ?? lead.updatedAt, lang)} · {lead.readMinutes}{' '}
+              {t(lang, 'minRead')}
+            </span>
           </div>
-          <h1 className="max-w-4xl font-heading text-4xl font-bold leading-tight text-balance sm:text-5xl">
+          <h1 className="max-w-4xl font-heading text-3xl font-bold leading-tight text-balance sm:text-4xl group-hover:text-primary">
             {localize(lead.title, lang)}
           </h1>
-          <p className="mt-4 max-w-3xl text-sm leading-6 text-white/85 sm:text-base">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
             {localize(lead.excerpt, lang)}
           </p>
-          <div className="mt-4 text-xs uppercase tracking-[0.24em] text-white/70">
-            {relativeTime(lead.publishedAt ?? lead.updatedAt, lang)} · {lead.readMinutes}{' '}
-            {t(lang, 'minRead')}
-          </div>
         </div>
       </Link>
 
-      <div className="grid gap-5">
+      <div className="divide-y divide-border border border-border bg-card">
         {secondary.map((article) => {
           const secondaryCategory = getCategoryBySlug(article.categories[0] ?? '')
           return (
             <Link
               key={article.id}
               href={`/${lang}/article/${article.slug}`}
-              className="group relative overflow-hidden rounded-[1.5rem]"
+              className="group flex gap-3 p-3 transition-colors hover:bg-secondary/40"
             >
-              <div className="relative aspect-[16/10]">
+              <div className="relative h-20 w-28 shrink-0 overflow-hidden bg-muted sm:h-24 sm:w-32">
                 <Image
                   src={article.mainImage}
                   alt={localize(article.title, lang)}
                   fill
-                  sizes="(max-width: 1024px) 100vw, 33vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  sizes="128px"
+                  className="object-cover"
                 />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-5 text-white">
-                {secondaryCategory && (
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
-                    {localize(secondaryCategory.name, lang)}
-                  </span>
-                )}
-                <h2 className="mt-2 font-heading text-xl font-semibold leading-snug text-balance">
+              <div className="min-w-0 flex-1 py-0.5">
+                <div className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 news-meta">
+                  {secondaryCategory && (
+                    <span className="news-category">{localize(secondaryCategory.name, lang)}</span>
+                  )}
+                  <span>{relativeTime(article.publishedAt ?? article.updatedAt, lang)}</span>
+                </div>
+                <h2 className="font-heading text-base font-semibold leading-snug text-balance group-hover:text-primary sm:text-lg">
                   {localize(article.title, lang)}
                 </h2>
               </div>

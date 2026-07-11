@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Menu, Search } from 'lucide-react'
 import {
   categories,
   localize,
@@ -10,6 +11,11 @@ import {
 import { longDate } from '@/lib/time'
 import { LanguageSwitcher } from './language-switcher'
 
+function isActivePath(path: string, href: string) {
+  if (!href) return path === '' || path === '/'
+  return path === href || path.startsWith(`${href}/`)
+}
+
 export function PublicSiteHeader({
   lang,
   path,
@@ -18,87 +24,141 @@ export function PublicSiteHeader({
   path: string
 }) {
   return (
-    <header className="border-b border-border bg-background/95 backdrop-blur">
-      <div className="border-b border-border bg-secondary/55">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 text-xs text-muted-foreground lg:flex-row lg:items-center lg:justify-between">
-          <span className="capitalize">{longDate(lang)}</span>
-          <div className="flex flex-wrap items-center gap-4">
-            <span>{t(lang, 'editorialUpdate')}</span>
-            <div className="flex flex-wrap items-center gap-3">
-              {secondaryNavigation.map((item) => (
-                <Link
-                  key={item.href}
-                  href={`/${lang}${item.href}`}
-                  className="transition-colors hover:text-foreground"
-                >
-                  {t(lang, item.label)}
-                </Link>
-              ))}
-            </div>
-            <LanguageSwitcher lang={lang} path={path} />
-          </div>
+    <header className="bg-card">
+      <div className="border-y border-foreground/20 bg-background">
+        <div className="mx-auto grid min-h-9 max-w-7xl grid-cols-[1fr_auto] items-center gap-4 px-4 text-[11px] text-muted-foreground md:grid-cols-[1fr_auto_1fr]">
+          <span className="capitalize tabular-nums">{longDate(lang)}</span>
+          <nav
+            aria-label={lang === 'ru' ? 'Служебная навигация' : 'Қызметтік навигация'}
+            className="hidden items-center gap-5 md:flex"
+          >
+            {secondaryNavigation.map((item) => (
+              <Link
+                key={item.href}
+                href={`/${lang}${item.href}`}
+                className="transition-colors duration-200 hover:text-foreground"
+              >
+                {t(lang, item.label)}
+              </Link>
+            ))}
+          </nav>
+          <LanguageSwitcher lang={lang} path={path} className="justify-self-end" />
         </div>
       </div>
 
-      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <Link href={`/${lang}`} className="inline-flex items-center gap-3">
-            <span className="flex size-12 items-center justify-center rounded-2xl bg-primary font-heading text-2xl font-bold text-primary-foreground">
-              Э
-            </span>
-            <span>
-              <span className="block font-heading text-4xl font-bold leading-none">
-                {t(lang, 'brandTitle')}
-              </span>
-              <span className="block text-sm uppercase tracking-[0.24em] text-muted-foreground">
-                {t(lang, 'brandTagline')}
-              </span>
-            </span>
+      <div className="mx-auto grid min-h-[76px] max-w-7xl grid-cols-[56px_1fr_56px] border-x border-foreground/20 sm:min-h-[88px] md:grid-cols-[minmax(180px,1fr)_auto_minmax(180px,1fr)]">
+        <div className="flex items-center border-r border-foreground/20 px-3 md:px-5">
+          <Link
+            href={`/${lang}/categories`}
+            className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
+          >
+            <Menu aria-hidden className="size-5" strokeWidth={1.7} />
+            <span className="hidden lg:inline">{t(lang, 'categoriesPage')}</span>
           </Link>
         </div>
 
-        <form action={`/${lang}/search`} className="w-full lg:max-w-md">
-          <label className="sr-only" htmlFor="site-search">
-            {t(lang, 'search')}
-          </label>
-          <input
-            id="site-search"
-            name="q"
-            placeholder={t(lang, 'searchPlaceholder')}
-            className="h-12 w-full rounded-full border border-border bg-secondary/55 px-5 text-sm outline-none transition focus:border-primary"
-          />
-        </form>
+        <Link
+          href={`/${lang}`}
+          className="flex min-w-0 items-center justify-center px-3 text-center"
+          aria-label={t(lang, 'brandTitle')}
+        >
+          <span className="font-brand whitespace-nowrap text-[clamp(1.55rem,3.1vw,2.8rem)] font-extrabold leading-none tracking-[-0.035em] text-foreground">
+            {t(lang, 'brandTitle')}
+          </span>
+        </Link>
+
+        <div className="flex items-center justify-end border-l border-foreground/20 px-3 md:px-5">
+          <span className="hidden max-w-44 text-right text-[11px] leading-4 text-muted-foreground lg:block">
+            {t(lang, 'brandTagline')}
+          </span>
+          <Link
+            href={`/${lang}/search`}
+            className="ml-4 inline-flex size-8 items-center justify-center transition-colors duration-200 hover:text-primary lg:hidden"
+            aria-label={t(lang, 'search')}
+          >
+            <Search aria-hidden className="size-5" strokeWidth={1.7} />
+          </Link>
+        </div>
       </div>
 
-      <nav className="border-t border-border bg-primary text-primary-foreground">
-        <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4">
-          {primaryNavigation.map((item) => (
-            <Link
-              key={item.href || 'home'}
-              href={`/${lang}${item.href}`}
-              className="whitespace-nowrap px-3 py-3 text-sm font-semibold transition-colors hover:bg-primary-foreground/10"
-            >
-              {t(lang, item.label)}
-            </Link>
-          ))}
-        </div>
-      </nav>
+      <div className="border-y border-foreground/20">
+        <div className="mx-auto grid max-w-7xl grid-cols-[48px_minmax(0,1fr)] border-x border-foreground/20 lg:grid-cols-[132px_minmax(0,1fr)_250px]">
+          <Link
+            href={`/${lang}/news`}
+            className="flex min-h-11 items-center justify-center border-r border-foreground/20 text-sm font-medium transition-colors duration-200 hover:bg-secondary lg:justify-start lg:px-4"
+            aria-label={t(lang, 'news')}
+          >
+            <Menu aria-hidden className="size-4 lg:mr-2" strokeWidth={1.7} />
+            <span className="hidden lg:inline">{t(lang, 'news')}</span>
+          </Link>
 
-      <div className="border-t border-border bg-card/80">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 overflow-x-auto px-4 py-3">
-          <span className="shrink-0 text-xs font-bold uppercase tracking-[0.22em] text-muted-foreground">
-            {t(lang, 'categoriesPage')}
-          </span>
+          <nav
+            aria-label={t(lang, 'mainSections')}
+            className="flex min-w-0 items-stretch overflow-x-auto"
+          >
+            {primaryNavigation.map((item) => {
+              const active = isActivePath(path, item.href)
+
+              return (
+                <Link
+                  key={item.href || 'home'}
+                  href={`/${lang}${item.href}`}
+                  aria-current={active ? 'page' : undefined}
+                  className={`relative flex min-h-11 shrink-0 items-center px-4 text-sm transition-colors duration-200 hover:bg-secondary ${
+                    active ? 'font-semibold text-foreground' : 'text-muted-foreground'
+                  }`}
+                >
+                  {t(lang, item.label)}
+                  {active ? (
+                    <span
+                      aria-hidden
+                      className="absolute inset-x-4 bottom-0 h-0.5 bg-foreground"
+                    />
+                  ) : null}
+                </Link>
+              )
+            })}
+          </nav>
+
+          <form
+            action={`/${lang}/search`}
+            className="hidden min-h-11 items-center border-l border-foreground/20 lg:flex"
+          >
+            <label className="sr-only" htmlFor="site-search">
+              {t(lang, 'search')}
+            </label>
+            <input
+              id="site-search"
+              name="q"
+              placeholder={t(lang, 'searchPlaceholder')}
+              className="h-full min-w-0 flex-1 bg-transparent px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:bg-secondary/60"
+            />
+            <button
+              type="submit"
+              className="flex h-full w-11 shrink-0 items-center justify-center border-l border-foreground/20 transition-colors duration-200 hover:bg-secondary"
+              aria-label={t(lang, 'search')}
+            >
+              <Search aria-hidden className="size-4" strokeWidth={1.7} />
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div className="bg-foreground text-background">
+        <nav
+          aria-label={t(lang, 'categoriesPage')}
+          className="mx-auto flex max-w-7xl items-center gap-6 overflow-x-auto px-4 py-2.5"
+        >
           {categories.map((category) => (
             <Link
               key={category.slug}
               href={`/${lang}/category/${category.slug}`}
-              className="whitespace-nowrap rounded-full border border-border px-3 py-1.5 text-sm transition-colors hover:border-primary hover:text-primary"
+              className="whitespace-nowrap text-xs font-medium text-background/72 transition-colors duration-200 hover:text-background"
             >
               {localize(category.name, lang)}
             </Link>
           ))}
-        </div>
+        </nav>
       </div>
     </header>
   )

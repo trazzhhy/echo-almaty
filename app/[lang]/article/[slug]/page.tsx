@@ -88,12 +88,8 @@ export default async function ArticlePage({
           </Link>
         </nav>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {article.breaking && (
-            <span className="rounded-full bg-destructive px-3 py-1 text-xs font-bold uppercase text-primary-foreground">
-              Breaking
-            </span>
-          )}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          {article.breaking && <span className="news-breaking">Breaking</span>}
           {article.categories.map((slugItem) => {
             const category = getCategoryBySlug(slugItem)
             if (!category) return null
@@ -101,20 +97,20 @@ export default async function ArticlePage({
               <Link
                 key={slugItem}
                 href={`/${safeLang}/category/${slugItem}`}
-                className="rounded-full bg-primary px-3 py-1 text-xs font-bold uppercase text-primary-foreground"
+                className="news-category hover:underline"
               >
                 {localize(category.name, safeLang)}
               </Link>
             )
           })}
           {!article.showOnHome && (
-            <span className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               {t(safeLang, 'hiddenFromHome')}
             </span>
           )}
         </div>
 
-        <h1 className="mt-5 font-heading text-4xl font-bold leading-tight text-balance sm:text-5xl">
+        <h1 className="mt-4 font-heading text-3xl font-bold leading-tight text-balance sm:text-4xl">
           {localize(article.title, safeLang)}
         </h1>
         <p className="mt-5 text-lg leading-8 text-muted-foreground">
@@ -141,7 +137,7 @@ export default async function ArticlePage({
           )}
         </div>
 
-        <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-[2rem]">
+        <div className="relative mt-6 aspect-[16/9] overflow-hidden bg-muted">
           <Image
             src={article.mainImage}
             alt={localize(article.title, safeLang)}
@@ -164,7 +160,7 @@ export default async function ArticlePage({
             <PublicSectionHeading lang={safeLang} title={t(safeLang, 'gallery')} />
             <div className="grid gap-4 sm:grid-cols-2">
               {article.gallery.map((item, index) => (
-                <div key={`${item}-${index}`} className="relative aspect-[4/3] overflow-hidden rounded-2xl">
+                <div key={`${item}-${index}`} className="relative aspect-[4/3] overflow-hidden bg-muted">
                   <Image
                     src={item}
                     alt={`${localize(article.title, safeLang)} ${index + 1}`}
@@ -187,7 +183,7 @@ export default async function ArticlePage({
                 if (!embedUrl) return null
 
                 return (
-                  <div key={`${url}-${index}`} className="overflow-hidden rounded-2xl border border-border">
+                  <div key={`${url}-${index}`} className="overflow-hidden border border-border">
                     <div className="aspect-video">
                       <iframe
                         src={embedUrl}
@@ -205,16 +201,16 @@ export default async function ArticlePage({
         )}
 
         {(article.tags.length > 0 || article.sourceName) && (
-          <section className="mt-12 rounded-[2rem] border border-border bg-card p-6">
+          <section className="mt-10 border border-border bg-card p-5">
             {article.tags.length > 0 && (
               <div>
-                <h2 className="font-heading text-xl font-semibold">{t(safeLang, 'tags')}</h2>
-                <div className="mt-4 flex flex-wrap gap-2">
+                <h2 className="font-heading text-lg font-semibold">{t(safeLang, 'tags')}</h2>
+                <div className="mt-3 flex flex-wrap gap-2">
                   {article.tags.map((tag) => (
                     <Link
                       key={tag}
                       href={`/${safeLang}/search?q=${encodeURIComponent(tag)}`}
-                      className="rounded-full bg-secondary px-3 py-1 text-sm text-secondary-foreground"
+                      className="border border-border bg-secondary px-2.5 py-1 text-sm text-secondary-foreground"
                     >
                       #{tag}
                     </Link>

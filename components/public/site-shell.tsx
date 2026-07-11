@@ -16,9 +16,9 @@ export function PublicSiteShell({
   mainClassName?: string
 }) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="public-theme min-h-screen">
       <PublicSiteHeader lang={lang} path={path} />
-      <main className={cn('mx-auto max-w-7xl px-4 py-8', mainClassName)}>
+      <main className={cn('mx-auto max-w-7xl px-4 py-6', mainClassName)}>
         {children}
       </main>
       <PublicSiteFooter lang={lang} />

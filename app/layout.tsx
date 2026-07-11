@@ -1,6 +1,6 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { Roboto, Roboto_Condensed } from 'next/font/google'
+import { Manrope, Roboto, Roboto_Condensed } from 'next/font/google'
 import { headers } from 'next/headers'
 import { siteConfig } from '@/lib/site-config'
 import './globals.css'
@@ -15,6 +15,12 @@ const robotoCondensed = Roboto_Condensed({
   subsets: ['latin', 'cyrillic'],
   weight: ['500', '600', '700'],
   variable: '--font-roboto-condensed',
+})
+
+const manrope = Manrope({
+  subsets: ['latin', 'cyrillic'],
+  weight: ['700', '800'],
+  variable: '--font-masthead',
 })
 
 export const metadata: Metadata = {
@@ -62,7 +68,7 @@ export default async function RootLayout({
   return (
     <html
       lang={lang}
-      className={`bg-background ${roboto.variable} ${robotoCondensed.variable}`}
+      className={`bg-background ${roboto.variable} ${robotoCondensed.variable} ${manrope.variable}`}
     >
       <body className="font-sans antialiased">
         {children}

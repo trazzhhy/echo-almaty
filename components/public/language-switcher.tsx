@@ -16,19 +16,20 @@ export function LanguageSwitcher({
   return (
     <div
       className={cn(
-        'inline-flex items-center rounded-full border border-border bg-background p-0.5 text-xs font-semibold',
+        'inline-flex items-center divide-x divide-foreground/20 border-x border-foreground/20 text-[10px] font-semibold',
         className,
       )}
     >
       <Link
         href={`/${lang}${path}`}
-        className="rounded-full bg-primary px-2.5 py-1 text-primary-foreground"
+        className="px-2.5 py-1.5 text-foreground"
+        aria-current="true"
       >
         {lang === 'ru' ? 'РУС' : 'ҚАЗ'}
       </Link>
       <Link
         href={`/${alternate}${path}`}
-        className="rounded-full px-2.5 py-1 text-muted-foreground transition-colors hover:text-foreground"
+        className="px-2.5 py-1.5 text-muted-foreground transition-colors duration-200 hover:bg-secondary hover:text-foreground"
       >
         {alternate === 'ru' ? 'РУС' : 'ҚАЗ'}
       </Link>

@@ -18,3 +18,5 @@ public/uploads/
 tsconfig.tsbuildinfo
 *.log
 pnpm-debug.log*
+.vercel
+.env*

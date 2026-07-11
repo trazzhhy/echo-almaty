@@ -21,29 +21,27 @@ export function NewsletterForm({
   const [state, formAction, pending] = useActionState(action, initialState)
 
   return (
-    <section className="overflow-hidden rounded-[2rem] bg-primary p-6 text-primary-foreground sm:p-8">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+    <section className="border border-border bg-card p-5 sm:p-6">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
         <div className="max-w-2xl">
-          <h2 className="font-heading text-3xl font-bold">
-            {t(lang, 'newsletterTitle')}
-          </h2>
-          <p className="mt-3 text-sm leading-6 text-primary-foreground/80">
+          <h2 className="font-heading text-2xl font-bold">{t(lang, 'newsletterTitle')}</h2>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
             {t(lang, 'newsletterText')}
           </p>
         </div>
 
-        <form action={formAction} className="flex w-full flex-col gap-3 sm:max-w-lg sm:flex-row">
+        <form action={formAction} className="flex w-full flex-col gap-2 sm:max-w-md sm:flex-row">
           <input
             type="email"
             name="email"
             required
             placeholder={t(lang, 'emailPlaceholder')}
-            className="h-12 min-w-0 flex-1 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-4 text-sm text-primary-foreground placeholder:text-primary-foreground/60 outline-none"
+            className="h-10 min-w-0 flex-1 border border-border bg-background px-3 text-sm outline-none transition focus:border-primary"
           />
           <button
             type="submit"
             disabled={pending}
-            className="h-12 rounded-full bg-accent px-5 text-sm font-semibold text-accent-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+            className="h-10 bg-primary px-5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {pending ? '...' : state.status === 'success' ? t(lang, 'subscriptionDone') : t(lang, 'subscribe')}
           </button>
@@ -51,12 +49,10 @@ export function NewsletterForm({
       </div>
 
       {state.status === 'error' && (
-        <p className="mt-4 text-sm text-primary-foreground/90">{state.message}</p>
+        <p className="mt-3 text-sm text-destructive">{state.message}</p>
       )}
       {state.status === 'success' && (
-        <p className="mt-4 text-sm text-primary-foreground/90">
-          {t(lang, 'newsletterSuccess')}
-        </p>
+        <p className="mt-3 text-sm text-muted-foreground">{t(lang, 'newsletterSuccess')}</p>
       )}
     </section>
   )

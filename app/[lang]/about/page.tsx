@@ -32,7 +32,7 @@ export default async function AboutPage({
         description={t(safeLang, 'aboutText')}
       />
 
-      <div className="space-y-6 rounded-[2rem] border border-border bg-card p-8 text-base leading-8 text-foreground/90">
+      <div className="news-prose-card">
         <p>
           {safeLang === 'ru'
             ? 'Проект Эхо Алматы задуман как современная региональная медиаплатформа: оперативная новостная лента, отдельные тематические разделы, архив и полноценный редакционный workflow для журналистов и редакторов.'

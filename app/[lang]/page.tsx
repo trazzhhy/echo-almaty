@@ -47,7 +47,7 @@ export default async function HomePage({
   if (!home.hero) {
     return (
       <PublicSiteShell lang={safeLang} path="">
-        <section className="rounded-[2rem] border border-dashed border-border bg-card px-6 py-16 text-center sm:px-10">
+        <section className="border border-dashed border-border bg-card px-6 py-14 text-center sm:px-10">
           <h1 className="font-heading text-4xl font-bold tracking-tight">
             {t(safeLang, 'brandTitle')}
           </h1>
@@ -59,13 +59,13 @@ export default async function HomePage({
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
               href={`/${safeLang}/news`}
-              className="rounded-full border border-border px-5 py-3 text-sm font-semibold transition hover:bg-secondary"
+              className="border border-border px-5 py-2.5 text-sm font-semibold transition hover:bg-secondary"
             >
               {t(safeLang, 'news')}
             </Link>
             <Link
               href="/admin"
-              className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              className="bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
             >
               {safeLang === 'ru' ? 'Открыть админку' : 'Админканы ашу'}
             </Link>
@@ -77,16 +77,9 @@ export default async function HomePage({
 
   return (
     <PublicSiteShell lang={safeLang} path="">
-      <div>
-        <div className="mb-4">
-          <span className="rounded-full bg-accent px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-accent-foreground">
-            {t(safeLang, 'mainNewsOfDay')}
-          </span>
-        </div>
-        <HomeHero lang={safeLang} lead={home.hero} secondary={home.heroSecondary} />
-      </div>
+      <HomeHero lang={safeLang} lead={home.hero} secondary={home.heroSecondary} />
 
-      <div className="mt-12 grid gap-10 xl:grid-cols-[minmax(0,1.45fr)_minmax(0,0.85fr)]">
+      <div className="mt-10 grid gap-8 xl:grid-cols-[minmax(0,1.45fr)_minmax(0,0.85fr)]">
         <section>
           <PublicSectionHeading
             lang={safeLang}

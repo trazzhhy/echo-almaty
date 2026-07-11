@@ -16,9 +16,9 @@ export function PopularWidget({
   }
 
   return (
-    <section className="rounded-[2rem] border border-border bg-card p-5">
-      <h2 className="font-heading text-2xl font-bold tracking-tight">{title}</h2>
-      <div className="mt-5 space-y-4">
+    <section className="border border-border bg-card p-4">
+      <h2 className="news-section-heading">{title}</h2>
+      <div>
         {items.map((article) => (
           <PublicArticleCard
             key={article.id}
