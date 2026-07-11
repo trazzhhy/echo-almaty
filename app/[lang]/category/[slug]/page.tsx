@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { PublicArticleCard } from '@/components/public/article-card'
-import { PublicPageIntro } from '@/components/public/page-intro'
 import { PopularWidget } from '@/components/public/popular-widget'
 import { PublicSiteShell } from '@/components/public/site-shell'
 import {
@@ -66,28 +65,35 @@ export default async function CategoryPage({
   ])
 
   return (
-    <PublicSiteShell lang={safeLang} path={`/category/${slug}`}>
-      <PublicPageIntro
-        eyebrow={t(safeLang, 'inCategory')}
-        title={localize(category.name, safeLang)}
-        description={
-          safeLang === 'ru'
-            ? 'Отдельная страница рубрики с поиском по тексту и автору, а также сортировкой по дате и популярности.'
-            : 'Мәтін мен автор бойынша іздеуі және күн мен танымалдық бойынша сұрыптауы бар жеке санат беті.'
-        }
-      />
+    <PublicSiteShell
+      lang={safeLang}
+      path={`/category/${slug}`}
+      mainClassName="mx-auto max-w-7xl px-4 pb-12 pt-8 sm:pt-10"
+    >
+      <header className="border-b border-foreground/20 pb-7">
+        <p className="text-sm font-medium text-primary">{t(safeLang, 'inCategory')}</p>
+        <h1 className="mt-2 max-w-5xl font-heading text-[clamp(2.75rem,7vw,5.5rem)] font-bold leading-[0.94] tracking-[-0.04em] text-balance">
+          {localize(category.name, safeLang)}
+        </h1>
+        <p className="mt-5 max-w-[64ch] text-base leading-7 text-muted-foreground">
+          {safeLang === 'ru'
+            ? 'Последние новости, объяснения и репортажи редакции по этой теме. Настройте выдачу по автору, дате или популярности.'
+            : 'Осы тақырып бойынша редакцияның соңғы жаңалықтары, түсіндірмелері мен репортаждары. Нәтижені автор, күн немесе танымалдық бойынша реттеңіз.'}
+        </p>
+      </header>
 
-      <form className="grid gap-4 rounded-[2rem] border border-border bg-card p-5 lg:grid-cols-3">
+      <form className="news-filter-form mt-8 lg:grid-cols-3">
         <input
           name="q"
           defaultValue={q}
           placeholder={t(safeLang, 'searchPlaceholder')}
-          className="h-12 rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+          className="news-input"
         />
         <select
           name="author"
           defaultValue={safeAuthor}
-          className="h-12 rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+          aria-label={t(safeLang, 'allAuthors')}
+          className="news-input"
         >
           <option value="">{t(safeLang, 'allAuthors')}</option>
           {authors.map((item) => (
@@ -99,7 +105,8 @@ export default async function CategoryPage({
         <select
           name="sort"
           defaultValue={safeSort}
-          className="h-12 rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+          aria-label={t(safeLang, 'sortNewest')}
+          className="news-input"
         >
           <option value="newest">{t(safeLang, 'sortNewest')}</option>
           <option value="popular">{t(safeLang, 'sortPopular')}</option>
@@ -108,35 +115,45 @@ export default async function CategoryPage({
         <div className="flex flex-wrap gap-3 lg:col-span-3">
           <button
             type="submit"
-            className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            className="news-btn-primary"
           >
             {t(safeLang, 'applyFilters')}
           </button>
           <Link
             href={`/${safeLang}/category/${slug}`}
-            className="rounded-full border border-border px-5 py-3 text-sm font-semibold transition hover:bg-secondary"
+            className="news-btn-secondary"
           >
             {t(safeLang, 'clearFilters')}
           </Link>
         </div>
       </form>
 
-      <div className="mt-8 grid gap-10 xl:grid-cols-[minmax(0,1.45fr)_minmax(0,0.85fr)]">
+      <div className="mt-10 grid gap-10 xl:grid-cols-[minmax(0,1.55fr)_minmax(280px,0.65fr)]">
         <section>
+          <div className="mb-5 flex items-end justify-between gap-4 border-b border-foreground/20 pb-3">
+            <h2 className="font-heading text-2xl font-bold tracking-[-0.02em]">
+              {safeLang === 'ru' ? 'Материалы рубрики' : 'Санат материалдары'}
+            </h2>
+            <span className="text-sm tabular-nums text-muted-foreground">
+              {articles.length} {t(safeLang, 'materials')}
+            </span>
+          </div>
           {articles.length === 0 ? (
-            <p className="rounded-3xl border border-dashed border-border px-6 py-16 text-center text-muted-foreground">
+            <p className="border-b border-foreground/20 px-6 py-16 text-center text-muted-foreground">
               {t(safeLang, 'noResults')}
             </p>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2">
-              {articles.map((article) => (
-                <PublicArticleCard key={article.id} article={article} lang={safeLang} />
+            <div className="grid gap-x-5 gap-y-8 md:grid-cols-2">
+              {articles.map((article, index) => (
+                <div key={article.id} className={index === 0 ? 'md:col-span-2' : undefined}>
+                  <PublicArticleCard article={article} lang={safeLang} />
+                </div>
               ))}
             </div>
           )}
         </section>
 
-        <aside>
+        <aside className="xl:pt-12">
           <PopularWidget
             lang={safeLang}
             title={t(safeLang, 'popularWeek')}

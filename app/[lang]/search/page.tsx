@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { PublicArticleCard } from '@/components/public/article-card'
-import { PublicPageIntro } from '@/components/public/page-intro'
 import { PopularWidget } from '@/components/public/popular-widget'
 import { PublicSiteShell } from '@/components/public/site-shell'
 import {
@@ -65,28 +64,35 @@ export default async function SearchPage({
   ])
 
   return (
-    <PublicSiteShell lang={safeLang} path="/search">
-      <PublicPageIntro
-        eyebrow={t(safeLang, 'results')}
-        title={q ? `«${q}»` : t(safeLang, 'search')}
-        description={
-          safeLang === 'ru'
-            ? 'Поиск работает по заголовкам, анонсам, полному тексту, тегам, категориям, источникам и авторам.'
-            : 'Іздеу тақырыптар, анонстар, толық мәтін, тегтер, санаттар, дереккөздер және авторлар бойынша жұмыс істейді.'
-        }
-      />
+    <PublicSiteShell
+      lang={safeLang}
+      path="/search"
+      mainClassName="mx-auto max-w-7xl px-4 pb-12 pt-8 sm:pt-10"
+    >
+      <header className="border-b border-foreground/20 pb-7">
+        <p className="text-sm font-medium text-primary">{t(safeLang, 'results')}</p>
+        <h1 className="mt-2 max-w-5xl font-heading text-[clamp(2.5rem,6vw,5rem)] font-bold leading-[0.96] tracking-[-0.035em] text-balance">
+          {q ? `«${q}»` : t(safeLang, 'search')}
+        </h1>
+        <p className="mt-5 max-w-[68ch] text-base leading-7 text-muted-foreground">
+          {safeLang === 'ru'
+            ? 'Ищите по заголовкам, полному тексту, тегам, категориям, источникам и авторам. Фильтры помогут сузить выдачу.'
+            : 'Тақырыптар, толық мәтін, тегтер, санаттар, дереккөздер және авторлар бойынша іздеңіз. Сүзгілер нәтижені нақтылауға көмектеседі.'}
+        </p>
+      </header>
 
-      <form className="grid gap-4 rounded-[2rem] border border-border bg-card p-5 lg:grid-cols-4">
+      <form className="news-filter-form mt-8 lg:grid-cols-4">
         <input
           name="q"
           defaultValue={q}
           placeholder={t(safeLang, 'searchPlaceholder')}
-          className="h-12 rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+          className="news-input"
         />
         <select
           name="category"
           defaultValue={safeCategory}
-          className="h-12 rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+          aria-label={t(safeLang, 'allCategories')}
+          className="news-input"
         >
           <option value="">{t(safeLang, 'allCategories')}</option>
           {categories.map((item) => (
@@ -98,7 +104,8 @@ export default async function SearchPage({
         <select
           name="author"
           defaultValue={safeAuthor}
-          className="h-12 rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+          aria-label={t(safeLang, 'allAuthors')}
+          className="news-input"
         >
           <option value="">{t(safeLang, 'allAuthors')}</option>
           {authors.map((item) => (
@@ -110,7 +117,8 @@ export default async function SearchPage({
         <select
           name="sort"
           defaultValue={safeSort}
-          className="h-12 rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+          aria-label={t(safeLang, 'sortNewest')}
+          className="news-input"
         >
           <option value="newest">{t(safeLang, 'sortNewest')}</option>
           <option value="popular">{t(safeLang, 'sortPopular')}</option>
@@ -119,35 +127,45 @@ export default async function SearchPage({
         <div className="flex flex-wrap gap-3 lg:col-span-4">
           <button
             type="submit"
-            className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            className="news-btn-primary"
           >
             {t(safeLang, 'applyFilters')}
           </button>
           <Link
             href={`/${safeLang}/search`}
-            className="rounded-full border border-border px-5 py-3 text-sm font-semibold transition hover:bg-secondary"
+            className="news-btn-secondary"
           >
             {t(safeLang, 'clearFilters')}
           </Link>
         </div>
       </form>
 
-      <div className="mt-8 grid gap-10 xl:grid-cols-[minmax(0,1.45fr)_minmax(0,0.85fr)]">
+      <div className="mt-10 grid gap-10 xl:grid-cols-[minmax(0,1.55fr)_minmax(280px,0.65fr)]">
         <section>
+          <div className="mb-5 flex items-end justify-between gap-4 border-b border-foreground/20 pb-3">
+            <h2 className="font-heading text-2xl font-bold tracking-[-0.02em]">
+              {safeLang === 'ru' ? 'Найденные материалы' : 'Табылған материалдар'}
+            </h2>
+            <span className="text-sm tabular-nums text-muted-foreground">
+              {results.length} {t(safeLang, 'materials')}
+            </span>
+          </div>
           {results.length === 0 ? (
-            <p className="rounded-3xl border border-dashed border-border px-6 py-16 text-center text-muted-foreground">
+            <p className="border-b border-foreground/20 px-6 py-16 text-center text-muted-foreground">
               {t(safeLang, 'noResults')}
             </p>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2">
-              {results.map((article) => (
-                <PublicArticleCard key={article.id} article={article} lang={safeLang} />
+            <div className="grid gap-x-5 gap-y-8 md:grid-cols-2">
+              {results.map((article, index) => (
+                <div key={article.id} className={index === 0 ? 'md:col-span-2' : undefined}>
+                  <PublicArticleCard article={article} lang={safeLang} />
+                </div>
               ))}
             </div>
           )}
         </section>
 
-        <aside>
+        <aside className="xl:pt-12">
           <PopularWidget
             lang={safeLang}
             title={t(safeLang, 'popular24h')}
