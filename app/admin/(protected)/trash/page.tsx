@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { RotateCcw, Trash2 } from 'lucide-react'
 import { updateArticleStateAction } from '@/app/admin/actions'
 import { SubmitButton } from '@/components/admin/submit-button'
 import { getCurrentUser } from '@/lib/cms/auth'
@@ -15,19 +16,19 @@ export default async function TrashPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
-          Корзина
+      <header>
+        <h1 className="admin-page-title">Корзина</h1>
+        <p className="admin-page-description">
+          Здесь находятся удалённые новости. Их можно восстановить или удалить навсегда.
         </p>
-        <h1 className="mt-2 font-heading text-4xl font-bold">Удаленные материалы</h1>
-      </div>
+      </header>
 
-      <div className="space-y-4">
+      <div className="divide-y divide-border border-y border-border bg-card">
         {trash.map((article) => (
-          <div key={article.id} className="rounded-[1.75rem] border border-border bg-card p-6">
+          <article key={article.id} className="p-5 sm:p-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <h2 className="font-heading text-2xl font-bold">{article.title.ru}</h2>
+                <h2 className="text-xl font-bold">{article.title.ru}</h2>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Удалено {fullDate(article.deletedAt ?? article.updatedAt, 'ru')}
                 </p>
@@ -37,7 +38,8 @@ export default async function TrashPage() {
                 <form action={updateArticleStateAction}>
                   <input type="hidden" name="articleId" value={article.id} />
                   <input type="hidden" name="action" value="restore" />
-                  <SubmitButton className="rounded-full border border-border px-4 py-2 text-sm font-semibold">
+                  <SubmitButton className="admin-btn-secondary min-h-10 px-4 text-sm">
+                    <RotateCcw aria-hidden className="size-4" strokeWidth={1.8} />
                     Восстановить
                   </SubmitButton>
                 </form>
@@ -45,19 +47,28 @@ export default async function TrashPage() {
                 <form action={updateArticleStateAction}>
                   <input type="hidden" name="articleId" value={article.id} />
                   <input type="hidden" name="action" value="purge" />
-                  <SubmitButton className="rounded-full bg-destructive px-4 py-2 text-sm font-semibold text-primary-foreground">
+                  <SubmitButton
+                    className="admin-btn-danger min-h-10 px-4 text-sm"
+                    confirmMessage={`Удалить «${article.title.ru}» навсегда? Это действие нельзя отменить.`}
+                    pendingLabel="Удаляем..."
+                  >
+                    <Trash2 aria-hidden className="size-4" strokeWidth={1.8} />
                     Удалить навсегда
                   </SubmitButton>
                 </form>
               </div>
             </div>
-          </div>
+          </article>
         ))}
 
         {trash.length === 0 && (
-          <p className="rounded-[1.75rem] border border-dashed border-border px-6 py-16 text-center text-muted-foreground">
-            Корзина пуста.
-          </p>
+          <div className="flex flex-col items-center px-6 py-16 text-center">
+            <Trash2 aria-hidden className="size-10 text-muted-foreground" strokeWidth={1.5} />
+            <h2 className="mt-4 text-xl font-bold">Корзина пуста</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Удалённые новости появятся здесь.
+            </p>
+          </div>
         )}
       </div>
     </div>

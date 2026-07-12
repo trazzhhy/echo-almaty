@@ -9,6 +9,12 @@ const initialState: AdminFormState = {
 }
 
 const roles: Role[] = ['admin', 'editor', 'author', 'moderator']
+const roleLabels: Record<Role, string> = {
+  admin: 'Администратор - полный доступ',
+  editor: 'Редактор - создаёт и публикует',
+  author: 'Автор - создаёт черновики',
+  moderator: 'Модератор - проверяет материалы',
+}
 
 export function UserEditorForm({
   user,
@@ -18,103 +24,106 @@ export function UserEditorForm({
   const [state, formAction, pending] = useActionState(saveUserAction, initialState)
 
   return (
-    <form action={formAction} className="space-y-4 rounded-[1.5rem] border border-border bg-card p-5">
+    <form action={formAction} className="admin-panel space-y-5">
       <input type="hidden" name="id" value={user?.id ?? ''} />
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="mb-2 block text-sm font-medium">Имя</label>
+          <label className="admin-label">Имя</label>
           <input
             name="name"
             required
             defaultValue={user?.name ?? ''}
-            className="h-11 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+            className="admin-field"
           />
         </div>
         <div>
-          <label className="mb-2 block text-sm font-medium">E-mail</label>
+          <label className="admin-label">Электронная почта</label>
           <input
             name="email"
             type="email"
             required
             defaultValue={user?.email ?? ''}
-            className="h-11 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+            className="admin-field"
           />
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="mb-2 block text-sm font-medium">Роль</label>
+          <label className="admin-label">Права доступа</label>
           <select
             name="role"
             defaultValue={user?.role ?? 'author'}
-            className="h-11 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+            className="admin-field"
           >
             {roles.map((role) => (
               <option key={role} value={role}>
-                {role}
+                {roleLabels[role]}
               </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="mb-2 block text-sm font-medium">
-            Пароль {user ? '(заполните только для смены)' : ''}
+          <label className="admin-label">
+            Пароль
           </label>
           <input
             name="password"
             type="password"
-            className="h-11 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+            className="admin-field"
           />
+          <p className="admin-help">
+            {user ? 'Оставьте пустым, если пароль менять не нужно.' : 'Придумайте временный пароль для сотрудника.'}
+          </p>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="mb-2 block text-sm font-medium">Био RU</label>
+          <label className="admin-label">Описание на русском</label>
           <textarea
             name="bioRu"
             defaultValue={user?.bio.ru ?? ''}
             rows={3}
-            className="w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-primary"
+            className="admin-textarea"
           />
         </div>
         <div>
-          <label className="mb-2 block text-sm font-medium">Био KK</label>
+          <label className="admin-label">Описание на казахском</label>
           <textarea
             name="bioKk"
             defaultValue={user?.bio.kk ?? ''}
             rows={3}
-            className="w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-primary"
+            className="admin-textarea"
           />
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="mb-2 block text-sm font-medium">Аватар</label>
+          <label className="admin-label">Фотография</label>
           <input
             name="avatar"
             defaultValue={user?.avatar ?? '/placeholder-user.jpg'}
-            className="h-11 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+            className="admin-field"
           />
         </div>
-        <label className="flex items-center gap-3 rounded-2xl border border-border px-4 py-3 text-sm">
+        <label className="flex min-h-12 items-center gap-3 rounded-md border border-border px-4 py-3 text-base">
           <input type="checkbox" name="active" defaultChecked={user?.active ?? true} />
           <span>Активный пользователь</span>
         </label>
       </div>
 
       {state.status === 'error' && (
-        <p className="text-sm text-destructive">{state.message}</p>
+        <p role="alert" className="text-sm font-medium text-destructive">{state.message}</p>
       )}
 
       <button
         type="submit"
         disabled={pending}
-        className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-70"
+        className="admin-btn-primary"
       >
-        {pending ? 'Сохраняем...' : user ? 'Обновить пользователя' : 'Создать пользователя'}
+        {pending ? 'Сохраняем...' : user ? 'Сохранить изменения' : 'Добавить сотрудника'}
       </button>
     </form>
   )

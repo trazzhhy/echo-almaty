@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { ArrowRight, CirclePlus, Clock3, FileText, Send, Users } from 'lucide-react'
 import { StatusBadge } from '@/components/admin/status-badge'
 import { getCurrentUser } from '@/lib/cms/auth'
 import { canAccessHistory, canManageUsers } from '@/lib/cms/permissions'
@@ -22,63 +23,106 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
-            Dashboard
-          </p>
-          <h1 className="mt-2 font-heading text-4xl font-bold">Редакционный центр</h1>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Быстрый обзор статусов материалов, очереди модерации и активности команды.
+          <h1 className="admin-page-title">Добро пожаловать, {user.name}</h1>
+          <p className="admin-page-description">
+            Здесь собраны главные задачи по управлению сайтом.
           </p>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <Link href="/admin/news/new" className="admin-btn-primary">
+          <CirclePlus aria-hidden className="size-5" strokeWidth={1.8} />
+          Создать новость
+        </Link>
+      </div>
+
+      <section aria-labelledby="quick-actions">
+        <h2 id="quick-actions" className="mb-4 text-xl font-bold">
+          Что нужно сделать?
+        </h2>
+        <div className="grid gap-4 md:grid-cols-3">
           <Link
             href="/admin/news/new"
-            className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground"
+            className="group admin-panel flex min-h-36 flex-col justify-between transition hover:border-primary"
           >
-            Новая новость
+            <CirclePlus aria-hidden className="size-7 text-primary" strokeWidth={1.7} />
+            <div className="mt-6 flex items-end justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-bold">Создать новость</h3>
+                <p className="mt-1 text-sm text-muted-foreground">Начать новый материал</p>
+              </div>
+              <ArrowRight aria-hidden className="size-5 text-primary" strokeWidth={1.8} />
+            </div>
+          </Link>
+          <Link
+            href="/admin/news?status=draft"
+            className="group admin-panel flex min-h-36 flex-col justify-between transition hover:border-primary"
+          >
+            <FileText aria-hidden className="size-7 text-primary" strokeWidth={1.7} />
+            <div className="mt-6 flex items-end justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-bold">Продолжить черновик</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Черновиков: {stats.drafts}
+                </p>
+              </div>
+              <ArrowRight aria-hidden className="size-5 text-primary" strokeWidth={1.8} />
+            </div>
           </Link>
           <Link
             href="/admin/review"
-            className="rounded-full border border-border px-5 py-3 text-sm font-semibold"
+            className="group admin-panel flex min-h-36 flex-col justify-between transition hover:border-primary"
           >
-            Очередь модерации
+            <Send aria-hidden className="size-7 text-primary" strokeWidth={1.7} />
+            <div className="mt-6 flex items-end justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-bold">Проверить материалы</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Ожидают проверки: {stats.review}
+                </p>
+              </div>
+              <ArrowRight aria-hidden className="size-5 text-primary" strokeWidth={1.8} />
+            </div>
           </Link>
         </div>
-      </div>
+      </section>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section aria-labelledby="site-status">
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <h2 id="site-status" className="text-xl font-bold">Состояние сайта</h2>
+          <Link href="/admin/news" className="text-sm font-semibold text-primary">
+            Все новости
+          </Link>
+        </div>
+        <div className="admin-panel grid gap-0 p-0 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          ['Всего материалов', stats.total],
           ['Опубликовано', stats.published],
-          ['На модерации', stats.review],
           ['Запланировано', stats.scheduled],
           ['Черновики', stats.drafts],
           ['Корзина', stats.trash],
-          ['Подписчики', stats.subscribers],
-          ['Ваши материалы', articles.length],
         ].map(([label, value]) => (
-          <div key={label} className="rounded-[1.5rem] border border-border bg-card p-5">
-            <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="mt-3 font-heading text-4xl font-bold">{value}</p>
+          <div key={label} className="border-b border-border p-5 last:border-b-0 sm:border-r sm:[&:nth-child(2)]:border-r-0 lg:border-b-0 lg:[&:nth-child(2)]:border-r">
+            <p className="text-base text-muted-foreground">{label}</p>
+            <p className="mt-2 text-3xl font-bold tabular-nums">{value}</p>
           </div>
         ))}
+        </div>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <div className="rounded-[1.75rem] border border-border bg-card p-6">
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(280px,0.75fr)]">
+        <div className="admin-panel">
           <div className="flex items-center justify-between">
-            <h2 className="font-heading text-2xl font-bold">Последние материалы</h2>
+            <h2 className="text-xl font-bold">Последние новости</h2>
             <Link href="/admin/news" className="text-sm font-medium text-primary">
-              Все материалы
+              Показать все
             </Link>
           </div>
-          <div className="mt-6 space-y-4">
+          <div className="mt-4 divide-y divide-border">
             {latestArticles.map((article) => (
-              <div
+              <Link
                 key={article.id}
-                className="flex flex-col gap-3 rounded-2xl border border-border p-4 md:flex-row md:items-center md:justify-between"
+                href={`/admin/news/${article.id}`}
+                className="flex min-h-20 flex-col gap-3 py-4 transition hover:bg-secondary/50 sm:flex-row sm:items-center sm:justify-between sm:px-2"
               >
                 <div>
                   <p className="font-medium">{article.title.ru}</p>
@@ -88,32 +132,27 @@ export default async function AdminDashboardPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <StatusBadge status={article.status} />
-                  <Link
-                    href={`/admin/news/${article.id}`}
-                    className="text-sm font-medium text-primary"
-                  >
-                    Открыть
-                  </Link>
+                  <ArrowRight aria-hidden className="size-4 text-primary" />
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
 
         {canAccessHistory(user) && (
-          <div className="rounded-[1.75rem] border border-border bg-card p-6">
+          <div className="admin-panel">
             <div className="flex items-center justify-between">
-              <h2 className="font-heading text-2xl font-bold">История действий</h2>
+              <h2 className="text-xl font-bold">Недавние действия</h2>
               <Link href="/admin/history" className="text-sm font-medium text-primary">
-                Все записи
+                Вся история
               </Link>
             </div>
-            <div className="mt-6 space-y-4">
+            <div className="mt-4 divide-y divide-border">
               {audit.map((entry) => (
-                <div key={entry.id} className="rounded-2xl border border-border p-4">
-                  <p className="font-medium">{entry.summary}</p>
+                <div key={entry.id} className="py-4">
+                  <p className="text-sm font-medium">{entry.summary}</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {entry.actorName} · {fullDate(entry.timestamp, 'ru')}
+                    {entry.actorName}, {fullDate(entry.timestamp, 'ru')}
                   </p>
                 </div>
               ))}
@@ -123,18 +162,17 @@ export default async function AdminDashboardPage() {
       </section>
 
       {canManageUsers(user) && (
-        <section className="rounded-[1.75rem] border border-border bg-card p-6">
-          <h2 className="font-heading text-2xl font-bold">Административные зоны</h2>
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            <Link href="/admin/users" className="rounded-2xl border border-border p-5 transition hover:bg-secondary">
-              Управление пользователями
-            </Link>
-            <Link href="/admin/trash" className="rounded-2xl border border-border p-5 transition hover:bg-secondary">
-              Корзина материалов
-            </Link>
-            <Link href="/admin/history" className="rounded-2xl border border-border p-5 transition hover:bg-secondary">
-              Журнал изменений
-            </Link>
+        <section className="admin-panel">
+          <h2 className="text-xl font-bold">Дополнительная информация</h2>
+          <div className="mt-4 flex flex-wrap gap-x-8 gap-y-3 text-sm">
+            <span className="inline-flex items-center gap-2 text-muted-foreground">
+              <Users aria-hidden className="size-4" />
+              Подписчиков: {stats.subscribers}
+            </span>
+            <span className="inline-flex items-center gap-2 text-muted-foreground">
+              <Clock3 aria-hidden className="size-4" />
+              Всего материалов: {stats.total}
+            </span>
           </div>
         </section>
       )}

@@ -30,20 +30,20 @@ export default async function EditArticlePage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <header className="mx-auto max-w-5xl">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <div className="flex items-center gap-3">
-            <StatusBadge status={article.status} />
-            <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-              {article.slug}
-            </span>
-          </div>
-          <h1 className="mt-3 font-heading text-4xl font-bold">{article.title.ru}</h1>
+          <StatusBadge status={article.status} />
+          <h1 className="mt-3 text-3xl font-bold tracking-tight">{article.title.ru}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Обновлено {fullDate(article.updatedAt, 'ru')} · Ревизия #{article.revision}
+            Последнее изменение: {fullDate(article.updatedAt, 'ru')}
           </p>
         </div>
-      </div>
+        </div>
+        <p className="admin-page-description">
+          Внесите изменения и выберите нужное действие внизу формы.
+        </p>
+      </header>
 
       <ArticleEditorForm article={article} authors={users} currentUser={user} />
     </div>

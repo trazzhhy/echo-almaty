@@ -1,15 +1,15 @@
 import Link from 'next/link'
+import { ExternalLink, LogOut, Newspaper } from 'lucide-react'
 import { logoutAction } from '@/app/admin/actions'
 import type { AuthUser } from '@/lib/cms/types'
+import { AdminMobileNav, AdminNav } from './admin-nav'
 
-const navigation = [
-  { href: '/admin', label: 'Dashboard' },
-  { href: '/admin/news', label: 'Новости' },
-  { href: '/admin/review', label: 'Модерация' },
-  { href: '/admin/trash', label: 'Корзина' },
-  { href: '/admin/users', label: 'Пользователи', adminOnly: true },
-  { href: '/admin/history', label: 'История' },
-]
+const roleLabels = {
+  admin: 'Администратор',
+  editor: 'Редактор',
+  author: 'Автор',
+  moderator: 'Модератор',
+}
 
 export function AdminShell({
   user,
@@ -20,87 +20,71 @@ export function AdminShell({
 }) {
   return (
     <div className="admin-theme min-h-screen">
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 xl:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="admin-sidebar rounded-[2rem] border p-6">
-          <div>
-            <p className="admin-sidebar-muted text-xs uppercase tracking-[0.24em]">
-              Эхо Алматы Admin
-            </p>
-            <h1 className="mt-3 font-heading text-3xl font-bold">Редакция</h1>
-            <p className="admin-sidebar-muted mt-2 text-sm">
-              {user.name} · {user.role}
-            </p>
-          </div>
+      <a
+        href="#admin-content"
+        className="fixed left-4 top-3 z-50 -translate-y-20 rounded-md bg-primary px-4 py-3 font-semibold text-primary-foreground focus:translate-y-0"
+      >
+        Перейти к содержимому
+      </a>
+      <header className="border-b border-border bg-card">
+        <div className="mx-auto flex min-h-16 max-w-[1500px] items-center justify-between gap-4 px-4 sm:px-6">
+          <Link href="/admin" className="flex items-center gap-3 font-bold">
+            <span className="flex size-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <Newspaper aria-hidden className="size-5" strokeWidth={1.8} />
+            </span>
+            <span>
+              <span className="block text-base leading-tight">Эхо Алматы</span>
+              <span className="block text-xs font-normal text-muted-foreground">
+                Управление сайтом
+              </span>
+            </span>
+          </Link>
 
-          <nav className="mt-8 space-y-2">
-            {navigation
-              .filter((item) => !item.adminOnly || user.role === 'admin')
-              .map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="admin-nav-link block rounded-2xl px-4 py-3 text-sm font-medium transition"
-                >
-                  {item.label}
-                </Link>
-              ))}
-          </nav>
-
-          <div className="mt-8 rounded-2xl border border-white/10 bg-white/6 p-4 text-sm">
-            <p className="font-semibold text-white">Демо-аккаунты</p>
-            <p className="mt-2">admin@echoalmaty.local / admin123</p>
-            <p>editor@echoalmaty.local / editor123</p>
-            <p>author@echoalmaty.local / author123</p>
-            <p>moderator@echoalmaty.local / moderator123</p>
-          </div>
-
-          <form action={logoutAction} className="mt-6">
-            <button
-              type="submit"
-              className="w-full rounded-2xl border border-white/12 bg-white/8 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/14"
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              href="/ru"
+              target="_blank"
+              rel="noreferrer"
+              className="admin-btn-secondary hidden min-h-10 px-3 text-sm sm:inline-flex"
             >
-              Выйти
-            </button>
-          </form>
+              Открыть сайт
+              <ExternalLink aria-hidden className="size-4" strokeWidth={1.8} />
+            </Link>
+            <div className="hidden text-right md:block">
+              <p className="text-sm font-semibold">{user.name}</p>
+              <p className="text-xs text-muted-foreground">{roleLabels[user.role]}</p>
+            </div>
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                className="admin-btn-secondary min-h-10 px-3 text-sm"
+                aria-label="Выйти из админ-панели"
+              >
+                <LogOut aria-hidden className="size-4" strokeWidth={1.8} />
+                <span className="hidden sm:inline">Выйти</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </header>
+
+      <AdminMobileNav isAdmin={user.role === 'admin'} />
+
+      <div className="mx-auto grid max-w-[1500px] xl:grid-cols-[250px_minmax(0,1fr)]">
+        <aside className="admin-sidebar hidden min-h-[calc(100vh-4rem)] border-r p-4 xl:flex xl:flex-col">
+          <AdminNav isAdmin={user.role === 'admin'} />
+
+          <div className="mt-auto border-t border-white/10 pt-4">
+            <p className="admin-sidebar-muted px-3 text-sm leading-6">
+              Вы вошли как
+            </p>
+            <p className="mt-1 px-3 text-sm font-semibold">{user.name}</p>
+            <p className="admin-sidebar-muted px-3 text-sm">{roleLabels[user.role]}</p>
+          </div>
         </aside>
 
-        <main className="admin-main space-y-6">
-          <header className="admin-shell-card admin-topbar rounded-[1.75rem] border border-border px-5 py-4">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  Активная сессия
-                </p>
-                <div className="mt-2 flex flex-wrap items-center gap-3">
-                  <span className="font-semibold">{user.name}</span>
-                  <span className="admin-chip inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
-                    {user.role}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/admin/login"
-                  className="rounded-full border border-border bg-background/75 px-4 py-2.5 text-sm font-semibold transition hover:bg-secondary"
-                >
-                  Сменить аккаунт
-                </Link>
-                <form action={logoutAction}>
-                  <button
-                    type="submit"
-                    className="rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-                  >
-                    Выйти
-                  </button>
-                </form>
-              </div>
-            </div>
-          </header>
-
-          <div className="admin-shell-card rounded-[2rem] border border-border p-6">
-            {children}
-          </div>
+        <main id="admin-content" className="admin-main min-w-0 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+          {children}
         </main>
       </div>
     </div>

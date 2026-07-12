@@ -25,10 +25,12 @@ export function MediaPathField({
   label,
   name,
   defaultValue,
+  required = false,
 }: {
   label: string
   name: string
   defaultValue?: string
+  required?: boolean
 }) {
   const [value, setValue] = useState(defaultValue ?? '')
   const [pending, setPending] = useState(false)
@@ -36,19 +38,21 @@ export function MediaPathField({
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium">{label}</label>
+      <label className="admin-label">{label}</label>
       <input
         name={name}
         value={value}
+        required={required}
         onChange={(event) => setValue(event.target.value)}
-        className="h-11 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+        className="admin-field"
       />
-      <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-primary">
-        <span>{pending ? 'Загрузка...' : 'Загрузить файл'}</span>
+      <p className="admin-help">Вставьте ссылку или выберите файл с компьютера.</p>
+      <label className="admin-btn-secondary cursor-pointer" aria-busy={pending}>
+        <span>{pending ? 'Загружаем...' : 'Выбрать изображение'}</span>
         <input
           type="file"
           accept="image/*"
-          className="hidden"
+          className="sr-only"
           onChange={async (event) => {
             const files = event.target.files
             if (!files || files.length === 0) return
@@ -72,7 +76,7 @@ export function MediaPathField({
           }}
         />
       </label>
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p role="alert" className="text-sm font-medium text-destructive">{error}</p>}
     </div>
   )
 }
@@ -92,21 +96,22 @@ export function MediaListField({
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium">{label}</label>
+      <label className="admin-label">{label}</label>
       <textarea
         name={name}
         value={value}
         onChange={(event) => setValue(event.target.value)}
         rows={4}
-        className="w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-primary"
+        className="admin-textarea"
       />
-      <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-primary">
-        <span>{pending ? 'Загрузка...' : 'Загрузить изображения'}</span>
+      <p className="admin-help">Можно выбрать несколько изображений сразу.</p>
+      <label className="admin-btn-secondary cursor-pointer" aria-busy={pending}>
+        <span>{pending ? 'Загружаем...' : 'Выбрать изображения'}</span>
         <input
           type="file"
           accept="image/*"
           multiple
-          className="hidden"
+          className="sr-only"
           onChange={async (event) => {
             const files = event.target.files
             if (!files || files.length === 0) return
@@ -130,7 +135,7 @@ export function MediaListField({
           }}
         />
       </label>
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p role="alert" className="text-sm font-medium text-destructive">{error}</p>}
     </div>
   )
 }

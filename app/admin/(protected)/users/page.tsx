@@ -18,23 +18,31 @@ export default async function UsersPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
-          Пользователи
+      <header>
+        <h1 className="admin-page-title">Пользователи</h1>
+        <p className="admin-page-description">
+          Создавайте аккаунты сотрудников и меняйте их права доступа.
         </p>
-        <h1 className="mt-2 font-heading text-4xl font-bold">Роли и доступы</h1>
-      </div>
+      </header>
 
       <section className="space-y-4">
-        <h2 className="font-heading text-2xl font-bold">Создать пользователя</h2>
+        <h2 className="text-xl font-bold">Добавить сотрудника</h2>
         <UserEditorForm />
       </section>
 
       <section className="space-y-4">
-        <h2 className="font-heading text-2xl font-bold">Команда редакции</h2>
-        <div className="grid gap-4">
+        <h2 className="text-xl font-bold">Сотрудники: {users.length}</h2>
+        <div className="divide-y divide-border border-y border-border bg-card">
           {users.map((member) => (
-            <UserEditorForm key={member.id} user={member} />
+            <details key={member.id} className="group">
+              <summary className="cursor-pointer px-5 py-5 marker:text-primary sm:px-6">
+                <span className="font-bold">{member.name}</span>
+                <span className="ml-3 text-sm text-muted-foreground">{member.email}</span>
+              </summary>
+              <div className="border-t border-border bg-background p-4 sm:p-6">
+                <UserEditorForm user={member} />
+              </div>
+            </details>
           ))}
         </div>
       </section>

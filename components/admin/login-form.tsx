@@ -18,21 +18,23 @@ export function LoginForm({
   const [state, formAction, pending] = useActionState(action, initialState)
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} className="space-y-5">
       <div>
-        <label className="mb-2 block text-sm font-medium" htmlFor="admin-email">
-          E-mail
+        <label className="admin-label" htmlFor="admin-email">
+          Электронная почта
         </label>
         <input
           id="admin-email"
           name="email"
           type="email"
           required
-          className="h-12 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+          autoComplete="email"
+          placeholder="name@example.com"
+          className="admin-field"
         />
       </div>
       <div>
-        <label className="mb-2 block text-sm font-medium" htmlFor="admin-password">
+        <label className="admin-label" htmlFor="admin-password">
           Пароль
         </label>
         <input
@@ -40,18 +42,22 @@ export function LoginForm({
           name="password"
           type="password"
           required
-          className="h-12 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+          autoComplete="current-password"
+          className="admin-field"
         />
       </div>
       {state.status === 'error' && (
-        <p className="text-sm text-destructive">{state.message}</p>
+        <div role="alert" className="rounded-md border border-destructive/25 bg-destructive/5 p-4">
+          <p className="font-semibold text-destructive">Не удалось войти</p>
+          <p className="mt-1 text-sm text-destructive">{state.message}</p>
+        </div>
       )}
       <button
         type="submit"
         disabled={pending}
-        className="h-12 w-full rounded-2xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-70"
+        className="admin-btn-primary w-full"
       >
-        {pending ? 'Входим...' : 'Войти в админ-панель'}
+        {pending ? 'Проверяем данные...' : 'Войти'}
       </button>
     </form>
   )

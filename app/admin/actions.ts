@@ -159,10 +159,10 @@ export async function saveArticleAction(
     }
 
     const input = parseArticleInput(formData, actor)
-    requireText(input.title.ru, 'Заголовок RU')
-    requireText(input.title.kk, 'Заголовок KK')
-    requireText(input.body.ru, 'Текст RU')
-    requireText(input.body.kk, 'Текст KK')
+    requireText(input.title.ru, 'Заголовок на русском')
+    requireText(input.title.kk, 'Заголовок на казахском')
+    requireText(input.body.ru, 'Текст на русском')
+    requireText(input.body.kk, 'Текст на казахском')
     requireText(input.mainImage, 'Главное изображение')
 
     if (input.categories.length === 0) {

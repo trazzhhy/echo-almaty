@@ -10,17 +10,20 @@ const labels: Record<ArticleStatus, string> = {
 }
 
 const classes: Record<ArticleStatus, string> = {
-  draft: 'bg-[#ede0cc] text-[#5e4936]',
-  in_review: 'bg-[#f1d7a8] text-[#6e4b1f]',
-  scheduled: 'bg-[#d9e7df] text-[#2f5548]',
-  published: 'bg-[#dbe7d3] text-[#345437]',
-  rejected: 'bg-[#efd5cd] text-[#7d4033]',
-  trash: 'bg-[#dcd3c7] text-[#4f4437]',
+  draft: 'bg-slate-100 text-slate-700',
+  in_review: 'bg-amber-100 text-amber-900',
+  scheduled: 'bg-blue-100 text-blue-900',
+  published: 'bg-emerald-100 text-emerald-900',
+  rejected: 'bg-orange-100 text-orange-900',
+  trash: 'bg-red-100 text-red-900',
 }
 
 export function StatusBadge({ status }: { status: ArticleStatus }) {
   return (
-    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${classes[status]}`}>
+    <span
+      aria-label={`Статус: ${labels[status]}`}
+      className={`inline-flex rounded-md px-2.5 py-1 text-sm font-semibold ${classes[status]}`}
+    >
       {labels[status]}
     </span>
   )

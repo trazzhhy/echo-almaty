@@ -30,91 +30,112 @@ export function ArticleEditorForm({
   const isModerator = currentUser.role === 'moderator'
 
   return (
-    <form action={formAction} className="space-y-8">
+    <form action={formAction} className="admin-editor mx-auto max-w-5xl space-y-6">
       <input type="hidden" name="id" value={article?.id ?? ''} />
 
-      <section className="grid gap-6 rounded-[2rem] border border-border bg-card p-6 xl:grid-cols-2">
+      <section className="grid gap-8">
+        <div>
+          <p className="text-sm font-semibold text-primary">Шаг 1</p>
+          <h2 className="mt-1 text-2xl font-bold">Напишите текст новости</h2>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Сначала заполните русскую версию, затем добавьте казахский перевод.
+          </p>
+        </div>
         <div className="space-y-6">
-          <h2 className="font-heading text-2xl font-bold">Контент RU</h2>
+          <h3 className="border-b border-border pb-3 text-xl font-bold">Русская версия</h3>
           <div>
-            <label className="mb-2 block text-sm font-medium">Заголовок RU</label>
+            <label className="admin-label">Заголовок</label>
             <input
               name="titleRu"
               required
               defaultValue={article?.title.ru ?? ''}
-              className="h-11 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+              className="admin-field"
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium">Анонс RU</label>
+            <label className="admin-label">Краткое описание</label>
             <textarea
               name="excerptRu"
               defaultValue={article?.excerpt.ru ?? ''}
               rows={4}
-              className="w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-primary"
+              className="admin-textarea"
             />
+            <p className="admin-help">Два или три предложения, которые кратко объясняют новость.</p>
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium">Основной текст RU</label>
+            <label className="admin-label">Полный текст</label>
             <textarea
               name="bodyRu"
               required
               defaultValue={article?.body.ru ?? ''}
               rows={10}
-              className="w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-primary"
+              className="admin-textarea"
             />
           </div>
         </div>
 
         <div className="space-y-6">
-          <h2 className="font-heading text-2xl font-bold">Контент KK</h2>
+          <h3 className="border-b border-border pb-3 text-xl font-bold">Казахская версия</h3>
           <div>
-            <label className="mb-2 block text-sm font-medium">Заголовок KK</label>
+            <label className="admin-label">Тақырып</label>
             <input
               name="titleKk"
               required
               defaultValue={article?.title.kk ?? ''}
-              className="h-11 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+              className="admin-field"
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium">Анонс KK</label>
+            <label className="admin-label">Қысқаша сипаттама</label>
             <textarea
               name="excerptKk"
               defaultValue={article?.excerpt.kk ?? ''}
               rows={4}
-              className="w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-primary"
+              className="admin-textarea"
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium">Основной текст KK</label>
+            <label className="admin-label">Толық мәтін</label>
             <textarea
               name="bodyKk"
               required
               defaultValue={article?.body.kk ?? ''}
               rows={10}
-              className="w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-primary"
+              className="admin-textarea"
             />
           </div>
         </div>
-      </section>
 
-      <section className="grid gap-6 rounded-[2rem] border border-border bg-card p-6 xl:grid-cols-2">
-        <div className="space-y-6">
-          <h2 className="font-heading text-2xl font-bold">Публикация</h2>
-          <div>
-            <label className="mb-2 block text-sm font-medium">Slug</label>
-            <input
-              name="slug"
-              defaultValue={article?.slug ?? ''}
-              className="h-11 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
-            />
-          </div>
+        <div className="border-t border-border pt-6">
           <MediaPathField
             label="Главное изображение"
             name="mainImage"
             defaultValue={article?.mainImage}
+            required
           />
+          <p className="admin-help">Обязательное изображение, которое будет показано рядом с новостью.</p>
+        </div>
+      </section>
+
+      <details className="border border-border bg-card">
+        <summary className="cursor-pointer px-5 py-5 text-lg font-bold marker:text-primary sm:px-6">
+          Дополнительные настройки
+          <span className="mt-1 block text-sm font-normal text-muted-foreground">
+            Изображения, видео, адрес страницы и настройки поиска
+          </span>
+        </summary>
+        <div className="grid gap-8 border-t border-border p-5 sm:p-6 xl:grid-cols-2">
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold">Изображения и видео</h2>
+          <div>
+            <label className="admin-label">Адрес страницы</label>
+            <input
+              name="slug"
+              defaultValue={article?.slug ?? ''}
+              className="admin-field"
+            />
+            <p className="admin-help">Можно оставить пустым: адрес будет создан автоматически.</p>
+          </div>
           <MediaListField
             label="Галерея изображений"
             name="gallery"
@@ -128,60 +149,71 @@ export function ArticleEditorForm({
               name="videoUrls"
               defaultValue={joinLines(article?.videoUrls ?? [])}
               rows={4}
-              className="w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-primary"
+              className="admin-textarea"
             />
           </div>
         </div>
 
         <div className="space-y-6">
-          <h2 className="font-heading text-2xl font-bold">SEO и метаданные</h2>
+          <h2 className="text-xl font-bold">Как новость выглядит в поиске</h2>
+          <p className="text-sm leading-6 text-muted-foreground">
+            Эти поля необязательны. Если оставить их пустыми, сайт использует заголовок и описание новости.
+          </p>
           <div>
-            <label className="mb-2 block text-sm font-medium">SEO title RU</label>
+            <label className="admin-label">Заголовок для поиска на русском</label>
             <input
               name="seoTitleRu"
               defaultValue={article?.seoTitle.ru ?? ''}
-              className="h-11 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+              className="admin-field"
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium">SEO title KK</label>
+            <label className="admin-label">Заголовок для поиска на казахском</label>
             <input
               name="seoTitleKk"
               defaultValue={article?.seoTitle.kk ?? ''}
-              className="h-11 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+              className="admin-field"
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium">SEO description RU</label>
+            <label className="admin-label">Описание для поиска на русском</label>
             <textarea
               name="seoDescriptionRu"
               defaultValue={article?.seoDescription.ru ?? ''}
               rows={3}
-              className="w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-primary"
+              className="admin-textarea"
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium">SEO description KK</label>
+            <label className="admin-label">Описание для поиска на казахском</label>
             <textarea
               name="seoDescriptionKk"
               defaultValue={article?.seoDescription.kk ?? ''}
               rows={3}
-              className="w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-primary"
+              className="admin-textarea"
             />
           </div>
         </div>
-      </section>
+        </div>
+      </details>
 
-      <section className="grid gap-6 rounded-[2rem] border border-border bg-card p-6 xl:grid-cols-2">
+      <section className="grid gap-8">
+        <div>
+          <p className="text-sm font-semibold text-primary">Шаг 2</p>
+          <h2 className="mt-1 text-2xl font-bold">Выберите рубрику и публикацию</h2>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Укажите, где и когда материал должен появиться на сайте.
+          </p>
+        </div>
         <div className="space-y-6">
-          <h2 className="font-heading text-2xl font-bold">Редакционные поля</h2>
+          <h3 className="text-xl font-bold">Основные настройки</h3>
           <div>
-            <label className="mb-2 block text-sm font-medium">Автор</label>
+            <label className="admin-label">Автор</label>
             <select
               name="authorId"
               defaultValue={article?.authorId ?? currentUser.id}
               disabled={!canChangeAuthor}
-              className="h-11 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary disabled:opacity-60"
+              className="admin-field"
             >
               {authors.map((author) => (
                 <option key={author.id} value={author.id}>
@@ -191,10 +223,10 @@ export function ArticleEditorForm({
             </select>
           </div>
           <div>
-            <p className="mb-3 text-sm font-medium">Рубрики</p>
+            <p className="admin-label">Рубрики</p>
             <div className="grid gap-3 sm:grid-cols-2">
               {categories.map((category) => (
-                <label key={category.slug} className="flex items-center gap-3 rounded-2xl border border-border px-4 py-3 text-sm">
+                <label key={category.slug} className="flex items-center gap-3 rounded-md border border-border px-4 py-3 text-base">
                   <input
                     type="checkbox"
                     name="categories"
@@ -207,96 +239,98 @@ export function ArticleEditorForm({
             </div>
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium">Теги (обязательно)</label>
+            <label className="admin-label">Ключевые слова</label>
             <input
               name="tags"
               required
               defaultValue={(article?.tags ?? []).join(', ')}
-              className="h-11 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+              className="admin-field"
             />
+            <p className="admin-help">Введите слова через запятую. Например: Алматы, транспорт, акимат.</p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-2 block text-sm font-medium">Источник</label>
+              <label className="admin-label">Название источника</label>
               <input
                 name="sourceName"
                 defaultValue={article?.sourceName ?? ''}
-                className="h-11 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+                className="admin-field"
               />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium">URL источника</label>
+              <label className="admin-label">Ссылка на источник</label>
               <input
                 name="sourceUrl"
                 defaultValue={article?.sourceUrl ?? ''}
-                className="h-11 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+                className="admin-field"
               />
             </div>
           </div>
         </div>
 
         <div className="space-y-6">
-          <h2 className="font-heading text-2xl font-bold">Статус и видимость</h2>
+          <h3 className="text-xl font-bold">Дата и показ на сайте</h3>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-2 block text-sm font-medium">Дата публикации</label>
+              <label className="admin-label">Дата публикации</label>
               <input
                 type="datetime-local"
                 name="publishedAt"
                 defaultValue={toDateTimeLocalValue(article?.publishedAt)}
-                className="h-11 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+                className="admin-field"
               />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium">План публикации</label>
+              <label className="admin-label">Опубликовать позже</label>
               <input
                 type="datetime-local"
                 name="scheduledAt"
                 defaultValue={toDateTimeLocalValue(article?.scheduledAt)}
-                className="h-11 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+                className="admin-field"
               />
             </div>
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium">Просмотры</label>
+            <label className="admin-label">Количество просмотров</label>
             <input
               type="number"
               min="0"
               name="views"
               defaultValue={article?.views ?? 0}
-              className="h-11 w-full rounded-2xl border border-border bg-background px-4 outline-none transition focus:border-primary"
+              className="admin-field"
             />
           </div>
           <div className="grid gap-3">
-            <label className="flex items-center gap-3 rounded-2xl border border-border px-4 py-3 text-sm">
+            <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3 text-base">
               <input type="checkbox" name="showOnHome" defaultChecked={article?.showOnHome ?? true} />
               <span>Показывать на главной</span>
             </label>
-            <label className="flex items-center gap-3 rounded-2xl border border-border px-4 py-3 text-sm">
+            <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3 text-base">
               <input type="checkbox" name="featured" defaultChecked={article?.featured ?? false} />
-              <span>Сделать hero-материалом</span>
+              <span>Сделать главной новостью</span>
             </label>
-            <label className="flex items-center gap-3 rounded-2xl border border-border px-4 py-3 text-sm">
+            <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3 text-base">
               <input type="checkbox" name="breaking" defaultChecked={article?.breaking ?? false} />
-              <span>Пометить как breaking news</span>
+              <span>Пометить как срочную новость</span>
             </label>
           </div>
         </div>
       </section>
 
       {state.status === 'error' && (
-        <div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-          {state.message}
+        <div role="alert" className="rounded-md border border-destructive/25 bg-destructive/5 p-4 text-destructive">
+          <p className="font-bold">Не удалось сохранить</p>
+          <p className="mt-1 text-sm">{state.message}</p>
         </div>
       )}
 
-      <div className="flex flex-wrap gap-3">
+      <div className="sticky bottom-0 flex flex-wrap gap-3 border border-border bg-card p-4 shadow-[0_-4px_8px_oklch(0.23_0.025_250/0.06)]">
         <button
           type="submit"
           name="intent"
           value="draft"
           disabled={pending}
-          className="rounded-full border border-border px-5 py-3 text-sm font-semibold transition hover:bg-secondary disabled:opacity-70"
+          className="admin-btn-secondary"
         >
           {pending ? 'Сохраняем...' : 'Сохранить черновик'}
         </button>
@@ -307,7 +341,7 @@ export function ArticleEditorForm({
             name="intent"
             value="review"
             disabled={pending}
-            className="rounded-full border border-border px-5 py-3 text-sm font-semibold transition hover:bg-secondary disabled:opacity-70"
+            className="admin-btn-secondary"
           >
             Отправить на проверку
           </button>
@@ -320,7 +354,12 @@ export function ArticleEditorForm({
               name="intent"
               value="publish"
               disabled={pending}
-              className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-70"
+              className="admin-btn-primary"
+              onClick={(event) => {
+                if (!window.confirm('Опубликовать эту новость на сайте прямо сейчас?')) {
+                  event.preventDefault()
+                }
+              }}
             >
               Опубликовать
             </button>
@@ -329,7 +368,7 @@ export function ArticleEditorForm({
               name="intent"
               value="schedule"
               disabled={pending}
-              className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground transition-opacity hover:opacity-90 disabled:opacity-70"
+              className="admin-btn-secondary"
             >
               Запланировать
             </button>

@@ -18,12 +18,12 @@ export default async function NewArticlePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
-          Новая публикация
+      <header className="mx-auto max-w-5xl">
+        <h1 className="admin-page-title">Новая новость</h1>
+        <p className="admin-page-description">
+          Заполните текст, выберите рубрику и сохраните черновик. Опубликовать можно сразу или позже.
         </p>
-        <h1 className="mt-2 font-heading text-4xl font-bold">Создание новости</h1>
-      </div>
+      </header>
 
       <ArticleEditorForm article={null} authors={users} currentUser={user} />
     </div>

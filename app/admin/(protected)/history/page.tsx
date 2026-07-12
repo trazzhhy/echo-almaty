@@ -18,22 +18,20 @@ export default async function HistoryPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
-          История
+      <header>
+        <h1 className="admin-page-title">История действий</h1>
+        <p className="admin-page-description">
+          Запись о том, кто и когда менял материалы или настройки сайта.
         </p>
-        <h1 className="mt-2 font-heading text-4xl font-bold">Журнал изменений</h1>
-      </div>
+      </header>
 
-      <div className="overflow-hidden rounded-[1.75rem] border border-border">
-        <table className="w-full border-collapse text-left text-sm">
+      <div className="overflow-x-auto border border-border bg-card">
+        <table className="min-w-[640px] w-full border-collapse text-left text-sm">
           <thead className="bg-secondary/50">
             <tr>
               <th className="px-4 py-3 font-semibold">Когда</th>
               <th className="px-4 py-3 font-semibold">Кто</th>
-              <th className="px-4 py-3 font-semibold">Сущность</th>
-              <th className="px-4 py-3 font-semibold">Действие</th>
-              <th className="px-4 py-3 font-semibold">Описание</th>
+              <th className="px-4 py-3 font-semibold">Что изменилось</th>
             </tr>
           </thead>
           <tbody>
@@ -43,10 +41,6 @@ export default async function HistoryPage() {
                   {fullDate(entry.timestamp, 'ru')}
                 </td>
                 <td className="px-4 py-3">{entry.actorName}</td>
-                <td className="px-4 py-3 uppercase text-muted-foreground">
-                  {entry.entityType}
-                </td>
-                <td className="px-4 py-3">{entry.action}</td>
                 <td className="px-4 py-3">{entry.summary}</td>
               </tr>
             ))}
