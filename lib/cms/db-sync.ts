@@ -100,11 +100,17 @@ function normalizeSubscriber(subscriber: Subscriber) {
   }
 }
 
+function normalizeSnapshot(data: CMSData) {
+  return {
+    users: data.users.map(normalizeUser),
+    articles: data.articles.map(normalizeArticle),
+    audit: data.audit.map(normalizeAuditEntry),
+    subscribers: data.subscribers.map(normalizeSubscriber),
+  }
+}
+
 export async function syncCMSData(data: CMSData) {
-  const users = data.users.map(normalizeUser)
-  const articles = data.articles.map(normalizeArticle)
-  const audit = data.audit.map(normalizeAuditEntry)
-  const subscribers = data.subscribers.map(normalizeSubscriber)
+  const { users, articles, audit, subscribers } = normalizeSnapshot(data)
 
   await prisma.$transaction([
     prisma.auditEntry.deleteMany(),
@@ -118,17 +124,53 @@ export async function syncCMSData(data: CMSData) {
   ])
 }
 
-export async function ensureDatabaseBootstrappedFromSnapshot() {
-  const [usersCount, articlesCount] = await prisma.$transaction([
-    prisma.user.count(),
-    prisma.article.count(),
-  ])
+// Arbitrary constant key for the Postgres advisory lock guarding the bootstrap.
+const BOOTSTRAP_LOCK_KEY = 7_340_231
 
-  if (usersCount > 0 || articlesCount > 0) {
+async function isDatabaseEmpty(client: Pick<typeof prisma, 'user' | 'article'>) {
+  const usersCount = await client.user.count()
+  const articlesCount = await client.article.count()
+  return usersCount === 0 && articlesCount === 0
+}
+
+async function bootstrapIfEmpty() {
+  if (!(await isDatabaseEmpty(prisma))) {
     return false
   }
 
-  const data = await readCMSData()
-  await syncCMSData(data)
-  return true
+  const { users, articles, audit, subscribers } = normalizeSnapshot(await readCMSData())
+
+  // Several requests (or build workers, or serverless instances) can see the
+  // empty database at once. The transaction-scoped advisory lock lets only one
+  // of them seed; the others wait, re-check, and find the data already there.
+  return prisma.$transaction(
+    async (tx) => {
+      await tx.$executeRawUnsafe(`SELECT pg_advisory_xact_lock(${BOOTSTRAP_LOCK_KEY})`)
+
+      if (!(await isDatabaseEmpty(tx))) {
+        return false
+      }
+
+      await tx.user.createMany({ data: users })
+      await tx.article.createMany({ data: articles })
+      await tx.auditEntry.createMany({ data: audit })
+      await tx.subscriber.createMany({ data: subscribers })
+      return true
+    },
+    { maxWait: 20_000, timeout: 30_000 },
+  )
+}
+
+let bootstrapInFlight: Promise<boolean> | null = null
+
+/**
+ * Seeds an empty database from data/cms.json. Safe to call concurrently:
+ * callers in the same process share one run, and the advisory lock above
+ * serializes runs across processes.
+ */
+export function ensureDatabaseBootstrappedFromSnapshot() {
+  bootstrapInFlight ??= bootstrapIfEmpty().finally(() => {
+    bootstrapInFlight = null
+  })
+  return bootstrapInFlight
 }
