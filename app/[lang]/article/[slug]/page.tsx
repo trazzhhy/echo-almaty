@@ -14,6 +14,7 @@ import {
   getUserById,
 } from '@/lib/cms/repository'
 import { getCategoryBySlug, isLang, localize, t, type Lang } from '@/lib/i18n'
+import { getArticleImage } from '@/lib/article-image'
 import { fullDate } from '@/lib/time'
 import { absoluteUrl, getVideoEmbedUrl, paragraphize } from '@/lib/utils'
 
@@ -49,11 +50,11 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      images: [
-        {
-          url: absoluteUrl(article.mainImage),
-        },
-      ],
+      // Social networks don't render SVG, so articles without their own
+      // image fall back to the platform default instead of the placeholder.
+      images: article.mainImage.trim()
+        ? [{ url: absoluteUrl(article.mainImage) }]
+        : undefined,
     },
   }
 }
@@ -139,7 +140,7 @@ export default async function ArticlePage({
 
         <div className="relative mt-6 aspect-[16/9] overflow-hidden bg-muted">
           <Image
-            src={article.mainImage}
+            src={getArticleImage(article)}
             alt={localize(article.title, safeLang)}
             fill
             priority

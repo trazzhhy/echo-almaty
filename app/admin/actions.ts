@@ -151,6 +151,8 @@ export async function saveArticleAction(
   _prevState: AdminFormState,
   formData: FormData,
 ): Promise<AdminFormState> {
+  let savedArticleId: string
+
   try {
     const actor = await getCurrentUser()
     if (!actor || !canCreateNews(actor)) {
@@ -165,7 +167,6 @@ export async function saveArticleAction(
     requireText(input.title.kk, 'Заголовок на казахском')
     requireText(input.body.ru, 'Текст на русском')
     requireText(input.body.kk, 'Текст на казахском')
-    requireText(input.mainImage, 'Главное изображение')
 
     if (input.categories.length === 0) {
       return {
@@ -236,7 +237,7 @@ export async function saveArticleAction(
     )
 
     revalidateAdminAndPublic(nextArticle)
-    redirect(`/admin/news/${nextArticle.id}`)
+    savedArticleId = nextArticle.id
   } catch (error) {
     return {
       status: 'error',
@@ -244,6 +245,9 @@ export async function saveArticleAction(
         error instanceof Error ? error.message : 'Не удалось сохранить материал.',
     }
   }
+
+  // redirect() throws internally, so it must stay outside the try/catch above.
+  redirect(`/admin/news/${savedArticleId}`)
 }
 
 export async function updateArticleStateAction(formData: FormData) {

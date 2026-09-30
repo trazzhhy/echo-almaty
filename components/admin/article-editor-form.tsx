@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { startTransition, useActionState, type FormEvent } from 'react'
 import { saveArticleAction, type AdminFormState } from '@/app/admin/actions'
 import { categories, localize, type Lang } from '@/lib/i18n'
 import { toDateTimeLocalValue } from '@/lib/time'
@@ -29,8 +29,18 @@ export function ArticleEditorForm({
   const canPublish = currentUser.role === 'admin' || currentUser.role === 'editor'
   const isModerator = currentUser.role === 'moderator'
 
+  // Submit through onSubmit instead of <form action>: React resets a form
+  // after an action runs, which wiped everything typed whenever saving failed
+  // validation. This keeps the fields; on success the action redirects away.
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const submitter = (event.nativeEvent as SubmitEvent).submitter
+    const formData = new FormData(event.currentTarget, submitter)
+    startTransition(() => formAction(formData))
+  }
+
   return (
-    <form action={formAction} className="admin-editor mx-auto max-w-5xl space-y-6">
+    <form onSubmit={handleSubmit} className="admin-editor mx-auto max-w-5xl space-y-6">
       <input type="hidden" name="id" value={article?.id ?? ''} />
 
       <section className="grid gap-8">
@@ -111,9 +121,10 @@ export function ArticleEditorForm({
             label="Главное изображение"
             name="mainImage"
             defaultValue={article?.mainImage}
-            required
           />
-          <p className="admin-help">Обязательное изображение, которое будет показано рядом с новостью.</p>
+          <p className="admin-help">
+            Необязательно. Если оставить пустым, на сайте будет показана стандартная обложка «Эхо Алматы».
+          </p>
         </div>
       </section>
 

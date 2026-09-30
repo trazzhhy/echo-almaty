@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Эхо Алматы">
+  <defs>
+    <pattern id="stripes" width="36" height="36" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+      <rect width="18" height="36" fill="#1d2433" opacity="0.035"/>
+    </pattern>
+  </defs>
+  <rect width="1600" height="900" fill="#eef2f7"/>
+  <rect width="1600" height="900" fill="url(#stripes)"/>
+  <g transform="translate(800 450)" text-anchor="middle" font-family="'Roboto Condensed', 'Arial Narrow', Arial, Helvetica, sans-serif">
+    <rect x="-46" y="-118" width="92" height="6" fill="#1f5bc4"/>
+    <text y="10" font-size="120" font-weight="700" letter-spacing="-3" fill="#1d2433">Эхо Алматы</text>
+    <text y="82" font-size="34" font-weight="400" letter-spacing="1" fill="#5b6576">Новости и аналитика Казахстана</text>
+  </g>
+</svg>

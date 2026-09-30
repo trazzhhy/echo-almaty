@@ -5,6 +5,7 @@ import { ArrowUpRight } from 'lucide-react'
 import { PublicSiteShell } from '@/components/public/site-shell'
 import { getCategorySummaries } from '@/lib/cms/repository'
 import { isLang, localize, t, type Lang } from '@/lib/i18n'
+import { getArticleImage } from '@/lib/article-image'
 import { relativeTime } from '@/lib/time'
 
 export async function generateMetadata({
@@ -59,7 +60,7 @@ export default async function CategoriesPage({
             {featured.latestArticle ? (
               <div className="relative min-h-64 overflow-hidden bg-muted md:min-h-[390px]">
                 <Image
-                  src={featured.latestArticle.mainImage}
+                  src={getArticleImage(featured.latestArticle)}
                   alt={localize(featured.latestArticle.title, safeLang)}
                   fill
                   priority
