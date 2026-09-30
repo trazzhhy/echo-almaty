@@ -2,11 +2,12 @@ import { randomUUID } from 'node:crypto'
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { put } from '@vercel/blob'
 import { getOptionalEnv, getRequiredEnv, isProduction } from './env'
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 
-type StorageDriver = 'local' | 's3'
+type StorageDriver = 'local' | 's3' | 'blob'
 
 export type UploadableFile = {
   buffer: Buffer
@@ -14,13 +15,29 @@ export type UploadableFile = {
   originalName: string
 }
 
+const NO_STORAGE_MESSAGE =
+  'Хранилище для изображений не подключено. В Vercel откройте проект → Storage → ' +
+  'Create Database → Blob (доступ Public) → Connect, затем сделайте Redeploy.'
+
 function getStorageDriver(): StorageDriver {
   const configured = getOptionalEnv('STORAGE_DRIVER')
-  if (configured === 'local' || configured === 's3') {
+  const hasBlob = Boolean(getOptionalEnv('BLOB_READ_WRITE_TOKEN'))
+
+  // Vercel's filesystem is read-only, so "local" can never work there.
+  if (configured === 'local' && process.env.VERCEL) {
+    if (hasBlob) return 'blob'
+    throw new Error(NO_STORAGE_MESSAGE)
+  }
+
+  if (configured === 'local' || configured === 's3' || configured === 'blob') {
     return configured
   }
 
-  return isProduction() ? 's3' : 'local'
+  // Not configured: use whatever storage is connected.
+  if (hasBlob) return 'blob'
+  if (getOptionalEnv('STORAGE_S3_BUCKET')) return 's3'
+  if (isProduction()) throw new Error(NO_STORAGE_MESSAGE)
+  return 'local'
 }
 
 function getExtension(file: UploadableFile) {
@@ -115,9 +132,23 @@ async function uploadToS3(files: UploadableFile[]) {
   )
 }
 
+async function uploadToBlob(files: UploadableFile[]) {
+  return Promise.all(
+    files.map(async (file) => {
+      const blob = await put(createObjectKey(file), file.buffer, {
+        access: 'public',
+        contentType: file.contentType,
+      })
+      return blob.url
+    }),
+  )
+}
+
 export async function uploadMediaFiles(files: UploadableFile[]) {
   files.forEach(assertUploadableImage)
 
   const driver = getStorageDriver()
-  return driver === 's3' ? uploadToS3(files) : uploadToLocal(files)
+  if (driver === 'blob') return uploadToBlob(files)
+  if (driver === 's3') return uploadToS3(files)
+  return uploadToLocal(files)
 }

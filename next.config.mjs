@@ -1,5 +1,8 @@
 const storagePublicBaseUrl = process.env.STORAGE_PUBLIC_BASE_URL
-const remotePatterns = []
+// Images uploaded to Vercel Blob are served from this domain.
+const remotePatterns = [
+  { protocol: 'https', hostname: '*.public.blob.vercel-storage.com' },
+]
 
 if (storagePublicBaseUrl) {
   const url = new URL(storagePublicBaseUrl)
@@ -15,7 +18,7 @@ if (storagePublicBaseUrl) {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: remotePatterns.length > 0 ? { remotePatterns } : undefined,
+  images: { remotePatterns },
 }
 
 export default nextConfig

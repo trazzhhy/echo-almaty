@@ -2,23 +2,64 @@
 
 import { useState } from 'react'
 
-async function uploadFiles(files: FileList): Promise<string[]> {
-  const body = new FormData()
-  Array.from(files).forEach((file) => {
-    body.append('files', file)
-  })
+// Vercel rejects request bodies over 4.5 MB, so large photos are downscaled
+// in the browser first; anything already small is sent untouched.
+const COMPRESS_ABOVE_BYTES = 2 * 1024 * 1024
+const MAX_IMAGE_SIDE = 2560
 
-  const response = await fetch('/api/upload', {
-    method: 'POST',
-    body,
-  })
-
-  if (!response.ok) {
-    throw new Error('Не удалось загрузить файлы.')
+async function prepareImage(file: File): Promise<File> {
+  if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size <= COMPRESS_ABOVE_BYTES) {
+    return file
   }
 
-  const payload = (await response.json()) as { paths: string[] }
-  return payload.paths
+  try {
+    const bitmap = await createImageBitmap(file)
+    const scale = Math.min(1, MAX_IMAGE_SIDE / Math.max(bitmap.width, bitmap.height))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.round(bitmap.width * scale)
+    canvas.height = Math.round(bitmap.height * scale)
+    canvas.getContext('2d')?.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+    bitmap.close()
+
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, 'image/webp', 0.85),
+    )
+    if (!blob || blob.size >= file.size) return file
+
+    return new File([blob], file.name.replace(/\.\w+$/, '') + '.webp', { type: 'image/webp' })
+  } catch {
+    return file
+  }
+}
+
+async function uploadFile(file: File): Promise<string> {
+  const body = new FormData()
+  body.append('files', await prepareImage(file))
+
+  const response = await fetch('/api/upload', { method: 'POST', body })
+
+  if (response.status === 413) {
+    throw new Error(`Файл «${file.name}» слишком большой. Уменьшите его и попробуйте снова.`)
+  }
+
+  const payload = (await response.json().catch(() => null)) as
+    | { paths?: string[]; error?: string }
+    | null
+
+  if (!response.ok || !payload?.paths?.[0]) {
+    throw new Error(payload?.error || 'Не удалось загрузить файл.')
+  }
+
+  return payload.paths[0]
+}
+
+// One request per file keeps each request under the platform size limit.
+async function uploadFiles(files: FileList): Promise<string[]> {
+  const paths: string[] = []
+  for (const file of Array.from(files)) {
+    paths.push(await uploadFile(file))
+  }
+  return paths
 }
 
 export function MediaPathField({
