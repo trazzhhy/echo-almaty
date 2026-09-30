@@ -15,18 +15,30 @@ export type UploadableFile = {
   originalName: string
 }
 
-const NO_STORAGE_MESSAGE =
-  'Хранилище для изображений не подключено. В Vercel откройте проект → Storage → ' +
-  'Create Database → Blob (доступ Public) → Connect, затем сделайте Redeploy.'
+function noStorageError() {
+  // Names only — values are credentials. Helps tell "not connected" apart
+  // from "connected to another environment" or "not redeployed yet".
+  const blobVars = Object.keys(process.env).filter((name) => name.includes('BLOB')).sort()
+  return new Error(
+    'Хранилище для изображений не подключено. В Vercel откройте проект → Storage → ' +
+      'Create Database → Blob (доступ Public) → Connect, затем сделайте Redeploy. ' +
+      `[окружение: ${process.env.VERCEL_ENV ?? 'неизвестно'}; ` +
+      `переменные BLOB: ${blobVars.length > 0 ? blobVars.join(', ') : 'нет'}]`,
+  )
+}
 
 function getStorageDriver(): StorageDriver {
   const configured = getOptionalEnv('STORAGE_DRIVER')
-  const hasBlob = Boolean(getOptionalEnv('BLOB_READ_WRITE_TOKEN'))
+  // Newer Vercel Blob stores connect via OIDC and only set BLOB_STORE_ID;
+  // older ones set BLOB_READ_WRITE_TOKEN. @vercel/blob handles both.
+  const hasBlob = Boolean(
+    getOptionalEnv('BLOB_READ_WRITE_TOKEN') || getOptionalEnv('BLOB_STORE_ID'),
+  )
 
   // Vercel's filesystem is read-only, so "local" can never work there.
   if (configured === 'local' && process.env.VERCEL) {
     if (hasBlob) return 'blob'
-    throw new Error(NO_STORAGE_MESSAGE)
+    throw noStorageError()
   }
 
   if (configured === 'local' || configured === 's3' || configured === 'blob') {
@@ -36,7 +48,7 @@ function getStorageDriver(): StorageDriver {
   // Not configured: use whatever storage is connected.
   if (hasBlob) return 'blob'
   if (getOptionalEnv('STORAGE_S3_BUCKET')) return 's3'
-  if (isProduction()) throw new Error(NO_STORAGE_MESSAGE)
+  if (isProduction()) throw noStorageError()
   return 'local'
 }
 
