@@ -5,6 +5,7 @@ import {
   adBannerSlots,
   type HomeAdBanner as HomeAdBannerData,
 } from '@/lib/home-ads'
+import { imageSrcProps } from '@/lib/article-image'
 import { localize, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
@@ -46,7 +47,7 @@ export function HomeAdBanner({
           <>
             <div className="relative aspect-[728/90] w-full">
               <Image
-                src={banner.imageSrc}
+                {...imageSrcProps(banner.imageSrc)}
                 alt={label}
                 fill
                 sizes="(min-width: 1280px) 1240px, 100vw"

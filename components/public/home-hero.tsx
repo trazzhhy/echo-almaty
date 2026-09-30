@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { getCategoryBySlug, localize, t, type Lang } from '@/lib/i18n'
-import { getArticleImage } from '@/lib/article-image'
+import { articleImageProps } from '@/lib/article-image'
 import { relativeTime } from '@/lib/time'
 import type { Article } from '@/lib/cms/types'
 
@@ -24,7 +24,7 @@ export function HomeHero({
       >
         <div className="relative aspect-[16/9] overflow-hidden bg-muted">
           <Image
-            src={getArticleImage(lead)}
+            {...articleImageProps(lead)}
             alt={localize(lead.title, lang)}
             fill
             priority
@@ -63,7 +63,7 @@ export function HomeHero({
             >
               <div className="relative h-20 w-28 shrink-0 overflow-hidden bg-muted sm:h-24 sm:w-32">
                 <Image
-                  src={getArticleImage(article)}
+                  {...articleImageProps(article)}
                   alt={localize(article.title, lang)}
                   fill
                   sizes="128px"

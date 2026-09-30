@@ -14,7 +14,7 @@ import {
   getUserById,
 } from '@/lib/cms/repository'
 import { getCategoryBySlug, isLang, localize, t, type Lang } from '@/lib/i18n'
-import { getArticleImage } from '@/lib/article-image'
+import { articleImageProps, imageSrcProps } from '@/lib/article-image'
 import { fullDate } from '@/lib/time'
 import { absoluteUrl, getVideoEmbedUrl, paragraphize } from '@/lib/utils'
 
@@ -140,7 +140,7 @@ export default async function ArticlePage({
 
         <div className="relative mt-6 aspect-[16/9] overflow-hidden bg-muted">
           <Image
-            src={getArticleImage(article)}
+            {...articleImageProps(article)}
             alt={localize(article.title, safeLang)}
             fill
             priority
@@ -163,7 +163,7 @@ export default async function ArticlePage({
               {article.gallery.map((item, index) => (
                 <div key={`${item}-${index}`} className="relative aspect-[4/3] overflow-hidden bg-muted">
                   <Image
-                    src={item}
+                    {...imageSrcProps(item)}
                     alt={`${localize(article.title, safeLang)} ${index + 1}`}
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"

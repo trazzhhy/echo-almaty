@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { getCategoryBySlug, localize, t, type Lang } from '@/lib/i18n'
-import { getArticleImage } from '@/lib/article-image'
+import { articleImageProps } from '@/lib/article-image'
 import { relativeTime } from '@/lib/time'
 import type { Article } from '@/lib/cms/types'
 
@@ -24,7 +24,7 @@ export function PublicArticleCard({
       <Link href={href} className="group flex gap-3 py-3 news-divider last:border-b-0">
         <div className="relative h-16 w-24 shrink-0 overflow-hidden bg-muted sm:h-[4.5rem] sm:w-28">
           <Image
-            src={getArticleImage(article)}
+            {...articleImageProps(article)}
             alt={localize(article.title, lang)}
             fill
             sizes="112px"
@@ -49,7 +49,7 @@ export function PublicArticleCard({
       <Link href={href} className="group block">
         <div className="relative mb-2.5 aspect-[4/3] overflow-hidden bg-muted">
           <Image
-            src={getArticleImage(article)}
+            {...articleImageProps(article)}
             alt={localize(article.title, lang)}
             fill
             sizes="(max-width: 768px) 100vw, 25vw"
@@ -71,7 +71,7 @@ export function PublicArticleCard({
     <Link href={href} className="group flex h-full flex-col border border-border bg-card">
       <div className="relative aspect-[16/10] overflow-hidden bg-muted">
         <Image
-          src={getArticleImage(article)}
+          {...articleImageProps(article)}
           alt={localize(article.title, lang)}
           fill
           sizes="(max-width: 1024px) 100vw, 33vw"
