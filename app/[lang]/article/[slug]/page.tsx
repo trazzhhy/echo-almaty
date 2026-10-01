@@ -21,6 +21,7 @@ import {
   languageAlternates,
   locales,
   localize,
+  resolveContentLang,
   t,
   type Lang,
   type LocalizedText,
@@ -56,15 +57,16 @@ export async function generateMetadata({
   const title = seoText(article.seoTitle, article.title, safeLang)
   const description = seoText(article.seoDescription, article.excerpt, safeLang)
   const path = `/article/${article.slug}`
-  // An untranslated English page shows the Russian text, so search engines
-  // should index the Russian original instead of a duplicate.
-  const translated = hasTranslation(article.title, safeLang)
+  // An untranslated page shows another language's text, so search engines
+  // should index that original instead of a duplicate.
+  const contentLang = resolveContentLang(article.title, safeLang)
+  const translated = contentLang === safeLang
 
   return {
     title,
     description,
     alternates: {
-      canonical: translated ? `/${safeLang}${path}` : `/ru${path}`,
+      canonical: `/${contentLang}${path}`,
       languages: languageAlternates(
         path,
         locales.filter((item) => hasTranslation(article.title, item)),
@@ -96,9 +98,9 @@ export default async function ArticlePage({
     notFound()
   }
 
-  const translated = hasTranslation(article.title, safeLang)
-  // Language of the text actually shown (English falls back to Russian).
-  const contentLang: Lang = translated ? safeLang : 'ru'
+  // Language of the text actually shown (untranslated pages fall back).
+  const contentLang = resolveContentLang(article.title, safeLang)
+  const translated = contentLang === safeLang
   const author = await getUserById(article.authorId)
   const [related, popular24h, popularWeek] = await Promise.all([
     getRelatedArticles(article),

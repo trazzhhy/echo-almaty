@@ -8,6 +8,7 @@ import { getCurrentUser } from '@/lib/cms/auth'
 import { canPublish } from '@/lib/cms/permissions'
 import { getAdminArticles } from '@/lib/cms/repository'
 import { fullDate } from '@/lib/time'
+import { localize } from '@/lib/i18n'
 
 export default async function AdminNewsPage({
   searchParams,
@@ -90,7 +91,7 @@ export default async function AdminNewsPage({
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
                 <StatusBadge status={article.status} />
-                <h3 className="mt-3 text-xl font-bold leading-snug">{article.title.ru}</h3>
+                <h3 className="mt-3 text-xl font-bold leading-snug">{localize(article.title, 'ru')}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Обновлено {fullDate(article.updatedAt, 'ru')}
                 </p>
@@ -130,7 +131,7 @@ export default async function AdminNewsPage({
                     <input type="hidden" name="action" value="publish" />
                     <SubmitButton
                       className="admin-btn-primary min-h-10 px-4 text-sm"
-                      confirmMessage={`Опубликовать «${article.title.ru}» на сайте прямо сейчас?`}
+                      confirmMessage={`Опубликовать «${localize(article.title, 'ru')}» на сайте прямо сейчас?`}
                       pendingLabel="Публикуем..."
                     >
                       Опубликовать

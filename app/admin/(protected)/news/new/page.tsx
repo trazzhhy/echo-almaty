@@ -3,6 +3,10 @@ import { ArticleEditorForm } from '@/components/admin/article-editor-form'
 import { getCurrentUser } from '@/lib/cms/auth'
 import { canCreateNews } from '@/lib/cms/permissions'
 import { getUsers } from '@/lib/cms/repository'
+import { isTranslationConfigured } from '@/lib/cms/translation'
+
+// Saving with automatic translation calls the Anthropic API and can take a while.
+export const maxDuration = 300
 
 export default async function NewArticlePage() {
   const user = await getCurrentUser()
@@ -25,7 +29,12 @@ export default async function NewArticlePage() {
         </p>
       </header>
 
-      <ArticleEditorForm article={null} authors={users} currentUser={user} />
+      <ArticleEditorForm
+        article={null}
+        authors={users}
+        currentUser={user}
+        translationEnabled={isTranslationConfigured()}
+      />
     </div>
   )
 }

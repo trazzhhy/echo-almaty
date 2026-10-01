@@ -8,6 +8,7 @@ import { getCurrentUser } from '@/lib/cms/auth'
 import { canModerate, canPublish } from '@/lib/cms/permissions'
 import { getAdminArticles } from '@/lib/cms/repository'
 import { fullDate } from '@/lib/time'
+import { localize } from '@/lib/i18n'
 
 export default async function ReviewQueuePage() {
   const user = await getCurrentUser()
@@ -42,8 +43,8 @@ export default async function ReviewQueuePage() {
                     Отправлено {fullDate(article.submittedAt ?? article.updatedAt, 'ru')}
                   </span>
                 </div>
-                <h2 className="mt-4 font-heading text-2xl font-bold">{article.title.ru}</h2>
-                <p className="mt-2 text-sm text-muted-foreground">{article.excerpt.ru}</p>
+                <h2 className="mt-4 font-heading text-2xl font-bold">{localize(article.title, 'ru')}</h2>
+                <p className="mt-2 text-sm text-muted-foreground">{localize(article.excerpt, 'ru')}</p>
               </div>
 
               <div className="flex flex-wrap gap-3">
@@ -70,7 +71,7 @@ export default async function ReviewQueuePage() {
                     <input type="hidden" name="action" value="publish" />
                     <SubmitButton
                       className="admin-btn-primary min-h-10 px-4 text-sm"
-                      confirmMessage={`Проверка завершена? Опубликовать «${article.title.ru}» на сайте?`}
+                      confirmMessage={`Проверка завершена? Опубликовать «${localize(article.title, 'ru')}» на сайте?`}
                       pendingLabel="Публикуем..."
                     >
                       <CheckCircle2 aria-hidden className="size-4" strokeWidth={1.8} />

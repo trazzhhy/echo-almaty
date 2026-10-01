@@ -31,6 +31,14 @@ import {
 } from '@/lib/cms/repository'
 import type { Article, AuthUser, SaveArticleInput } from '@/lib/cms/types'
 import { saveAdBanner } from '@/lib/cms/ad-banners'
+import {
+  getMissingLangs,
+  getSourceLang,
+  isTranslationConfigured,
+  translatableFields,
+  translateMissing,
+  TranslationError,
+} from '@/lib/cms/translation'
 import { adBannerSlots, type AdBannerSlot } from '@/lib/home-ads'
 import { fromDateTimeLocalValue } from '@/lib/time'
 import { splitBySeparators } from '@/lib/utils'
@@ -84,6 +92,24 @@ function revalidateAdminAndPublic(article?: Article | null) {
 function requireText(value: string, label: string) {
   if (!value.trim()) {
     throw new Error(`Поле «${label}» обязательно.`)
+  }
+}
+
+const languageNamesRu: Record<Lang, string> = { ru: 'русском', kk: 'казахском', en: 'английском' }
+const languageAdjectivesRu: Record<Lang, string> = { ru: 'русский', kk: 'казахский', en: 'английский' }
+
+// One language is enough; the others can be machine-translated. A language
+// that is started must have both a title and text.
+function validateArticleLanguages(input: SaveArticleInput) {
+  for (const lang of locales) {
+    if (input.title[lang].trim() || input.body[lang].trim()) {
+      requireText(input.title[lang], `Заголовок на ${languageNamesRu[lang]}`)
+      requireText(input.body[lang], `Текст на ${languageNamesRu[lang]}`)
+    }
+  }
+
+  if (!getSourceLang(input)) {
+    throw new Error('Заполните заголовок и текст хотя бы на одном языке.')
   }
 }
 
@@ -171,18 +197,8 @@ export async function saveArticleAction(
       }
     }
 
-    const input = parseArticleInput(formData, actor)
-    requireText(input.title.ru, 'Заголовок на русском')
-    requireText(input.title.kk, 'Заголовок на казахском')
-    requireText(input.body.ru, 'Текст на русском')
-    requireText(input.body.kk, 'Текст на казахском')
-
-    // The English version is optional, but once started it must be complete
-    // enough to publish: a title without text (or vice versa) is an error.
-    if (input.title.en.trim() || input.body.en.trim()) {
-      requireText(input.title.en, 'Заголовок на английском')
-      requireText(input.body.en, 'Текст на английском')
-    }
+    let input = parseArticleInput(formData, actor)
+    validateArticleLanguages(input)
 
     if (input.categories.length === 0) {
       return {
@@ -238,6 +254,23 @@ export async function saveArticleAction(
       }
     }
 
+    // Fill empty languages before saving. If translation fails nothing is
+    // saved; the editor can retry or untick auto-translate to save as is.
+    const autoTranslate = formData.get('autoTranslate') === 'on'
+    if (autoTranslate && isTranslationConfigured() && getMissingLangs(input).length > 0) {
+      try {
+        input = { ...input, ...(await translateMissing(input)).texts }
+      } catch (error) {
+        if (error instanceof TranslationError) {
+          return {
+            status: 'error',
+            message: `${error.message} Чтобы сохранить без перевода, снимите галочку «Переводить автоматически».`,
+          }
+        }
+        throw error
+      }
+    }
+
     const nextArticle = await saveArticle(
       actor,
       input,
@@ -264,6 +297,60 @@ export async function saveArticleAction(
 
   // redirect() throws internally, so it must stay outside the try/catch above.
   redirect(`/admin/news/${savedArticleId}`)
+}
+
+export type TranslateArticleState = {
+  status: 'success' | 'error'
+  message: string
+  // Form field name (e.g. "titleEn") → translated value, for empty fields only.
+  fields: Record<string, string>
+}
+
+export async function translateArticleDraftAction(
+  formData: FormData,
+): Promise<TranslateArticleState> {
+  const actor = await getCurrentUser()
+  if (!actor || !canCreateNews(actor)) {
+    return { status: 'error', message: 'Недостаточно прав для работы с материалами.', fields: {} }
+  }
+
+  const input = parseArticleInput(formData, actor)
+  if (!getSourceLang(input)) {
+    return {
+      status: 'error',
+      message: 'Сначала заполните заголовок и текст хотя бы на одном языке.',
+      fields: {},
+    }
+  }
+
+  try {
+    const { texts, langs } = await translateMissing(input)
+    if (langs.length === 0) {
+      return { status: 'success', message: 'Все языки уже заполнены.', fields: {} }
+    }
+
+    const fields: Record<string, string> = {}
+    for (const lang of langs) {
+      for (const field of translatableFields) {
+        if (!input[field][lang].trim() && texts[field][lang]) {
+          fields[`${field}${formFieldSuffix[lang]}`] = texts[field][lang]
+        }
+      }
+    }
+
+    const names = langs.map((lang) => languageAdjectivesRu[lang])
+    return {
+      status: 'success',
+      message: `Готово: добавлен ${names.join(', ')} перевод. Проверьте текст перед сохранением.`,
+      fields,
+    }
+  } catch (error) {
+    return {
+      status: 'error',
+      message: error instanceof TranslationError ? error.message : 'Не удалось перевести материал.',
+      fields: {},
+    }
+  }
 }
 
 export async function updateArticleStateAction(formData: FormData) {

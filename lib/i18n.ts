@@ -15,9 +15,9 @@ export const languageLabels: Record<Lang, string> = { ru: 'РУС', kk: 'ҚАЗ'
 // BCP 47 locales for Intl date/number formatting.
 export const intlLocales: Record<Lang, string> = { ru: 'ru-RU', kk: 'kk-KZ', en: 'en-GB' }
 
-// The English version is optional for editorial content: until an editor adds
-// a translation, English pages show the Russian text instead of a blank.
-const contentFallback: Partial<Record<Lang, Lang>> = { en: 'ru' }
+// An article may be written in one language only. Until it is translated,
+// other language pages show the first available version instead of a blank.
+const contentFallbackOrder: Lang[] = ['ru', 'kk', 'en']
 
 export const categories = [
   { slug: 'society', name: { ru: 'Общество', kk: 'Қоғам', en: 'Society' } },
@@ -148,9 +148,9 @@ const dictionary: Dictionary = {
   language: { ru: 'Язык', kk: 'Тіл', en: 'Language' },
   serviceNavigation: { ru: 'Служебная навигация', kk: 'Қызметтік навигация', en: 'Site information' },
   notTranslated: {
-    ru: 'Этот материал пока доступен только на русском языке.',
-    kk: 'Бұл материал әзірге тек орыс тілінде қолжетімді.',
-    en: 'This story is not yet available in English and is shown in Russian.',
+    ru: 'Этот материал пока не переведён на русский язык и показан в оригинале.',
+    kk: 'Бұл материал әлі қазақ тіліне аударылмаған және түпнұсқада көрсетілген.',
+    en: 'This story is not yet available in English and is shown in the original language.',
   },
 }
 
@@ -180,10 +180,14 @@ export function t(lang: Lang, key: keyof typeof dictionary): string {
   return dictionary[key][lang]
 }
 
+/** The language whose text `localize` shows for `lang`. */
+export function resolveContentLang(text: LocalizedText, lang: Lang): Lang {
+  if (text[lang]?.trim()) return lang
+  return contentFallbackOrder.find((item) => text[item]?.trim()) ?? lang
+}
+
 export function localize(text: LocalizedText, lang: Lang): string {
-  const value = text[lang] ?? ''
-  const fallback = contentFallback[lang]
-  return value.trim() || !fallback ? value : text[fallback] ?? ''
+  return text[resolveContentLang(text, lang)] ?? ''
 }
 
 export function hasTranslation(text: LocalizedText, lang: Lang): boolean {
