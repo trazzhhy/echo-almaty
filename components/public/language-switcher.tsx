@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getAlternateLang, type Lang } from '@/lib/i18n'
+import { languageLabels, languageSwitcherOrder, t, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 export function LanguageSwitcher({
@@ -11,28 +11,34 @@ export function LanguageSwitcher({
   path: string
   className?: string
 }) {
-  const alternate = getAlternateLang(lang)
-
   return (
-    <div
+    <nav
+      aria-label={t(lang, 'language')}
       className={cn(
         'inline-flex items-center divide-x divide-foreground/20 border-x border-foreground/20 text-[10px] font-semibold',
         className,
       )}
     >
-      <Link
-        href={`/${lang}${path}`}
-        className="px-2.5 py-1.5 text-foreground"
-        aria-current="true"
-      >
-        {lang === 'ru' ? 'РУС' : 'ҚАЗ'}
-      </Link>
-      <Link
-        href={`/${alternate}${path}`}
-        className="px-2.5 py-1.5 text-muted-foreground transition-colors duration-200 hover:bg-secondary hover:text-foreground"
-      >
-        {alternate === 'ru' ? 'РУС' : 'ҚАЗ'}
-      </Link>
-    </div>
+      {languageSwitcherOrder.map((item) => {
+        const active = item === lang
+
+        return (
+          <Link
+            key={item}
+            href={`/${item}${path}`}
+            hrefLang={item}
+            aria-current={active ? 'true' : undefined}
+            className={cn(
+              'px-2.5 py-1.5',
+              active
+                ? 'text-foreground'
+                : 'text-muted-foreground transition-colors duration-200 hover:bg-secondary hover:text-foreground',
+            )}
+          >
+            {languageLabels[item]}
+          </Link>
+        )
+      })}
+    </nav>
   )
 }

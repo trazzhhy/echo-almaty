@@ -31,6 +31,7 @@ export function NewsletterForm({
         </div>
 
         <form action={formAction} className="flex w-full flex-col gap-2 sm:max-w-md sm:flex-row">
+          <input type="hidden" name="lang" value={lang} />
           <input
             type="email"
             name="email"

@@ -76,9 +76,14 @@ export default async function CategoryPage({
           {localize(category.name, safeLang)}
         </h1>
         <p className="mt-5 max-w-[64ch] text-base leading-7 text-muted-foreground">
-          {safeLang === 'ru'
-            ? 'Последние новости, объяснения и репортажи редакции по этой теме. Настройте выдачу по автору, дате или популярности.'
-            : 'Осы тақырып бойынша редакцияның соңғы жаңалықтары, түсіндірмелері мен репортаждары. Нәтижені автор, күн немесе танымалдық бойынша реттеңіз.'}
+          {localize(
+            {
+              ru: 'Последние новости, объяснения и репортажи редакции по этой теме. Настройте выдачу по автору, дате или популярности.',
+              kk: 'Осы тақырып бойынша редакцияның соңғы жаңалықтары, түсіндірмелері мен репортаждары. Нәтижені автор, күн немесе танымалдық бойынша реттеңіз.',
+              en: 'The newsroom’s latest news, explainers and reports on this topic. Filter by author, date or popularity.',
+            },
+            safeLang,
+          )}
         </p>
       </header>
 
@@ -132,7 +137,14 @@ export default async function CategoryPage({
         <section>
           <div className="mb-5 flex items-end justify-between gap-4 border-b border-foreground/20 pb-3">
             <h2 className="font-heading text-2xl font-bold tracking-[-0.02em]">
-              {safeLang === 'ru' ? 'Материалы рубрики' : 'Санат материалдары'}
+              {localize(
+                {
+                  ru: 'Материалы рубрики',
+                  kk: 'Санат материалдары',
+                  en: 'Stories in this section',
+                },
+                safeLang,
+              )}
             </h2>
             <span className="text-sm tabular-nums text-muted-foreground">
               {articles.length} {t(safeLang, 'materials')}

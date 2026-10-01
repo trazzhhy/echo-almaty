@@ -31,7 +31,14 @@ export async function generateMetadata({
   const safeLang = isLang(lang) ? lang : 'ru'
 
   return {
-    title: safeLang === 'ru' ? 'Новости Эхо Алматы' : 'Эхо Алматы жаңалықтары',
+    title: localize(
+      {
+        ru: 'Новости Эхо Алматы',
+        kk: 'Эхо Алматы жаңалықтары',
+        en: 'Echo Almaty news',
+      },
+      safeLang,
+    ),
   }
 }
 
@@ -71,9 +78,14 @@ export default async function NewsPage({
         eyebrow={t(safeLang, 'news')}
         title={t(safeLang, 'allNews')}
         description={
-          safeLang === 'ru'
-            ? 'Единая лента редакции с поиском по тексту, фильтрами по рубрикам и авторами, а также сортировкой по дате и популярности.'
-            : 'Мәтін бойынша іздеу, санаттар мен авторлар фильтрі және күн мен танымалдық бойынша сұрыптау бар бірыңғай редакциялық лента.'
+          localize(
+            {
+              ru: 'Единая лента редакции с поиском по тексту, фильтрами по рубрикам и авторами, а также сортировкой по дате и популярности.',
+              kk: 'Мәтін бойынша іздеу, санаттар мен авторлар фильтрі және күн мен танымалдық бойынша сұрыптау бар бірыңғай редакциялық лента.',
+              en: 'The newsroom’s complete feed, with full-text search, filters by section and author, and sorting by date or popularity.',
+            },
+            safeLang,
+          )
         }
       />
 

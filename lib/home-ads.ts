@@ -13,9 +13,9 @@ export type HomeAdBanner = {
 export const adBannerSlots: AdBannerSlot[] = ['top', 'middle', 'bottom']
 
 export const adBannerSlotLabels: Record<AdBannerSlot, Record<Lang, string>> = {
-  top: { ru: 'Верхний баннер', kk: 'Жоғарғы баннер' },
-  middle: { ru: 'Средний баннер', kk: 'Ортаңғы баннер' },
-  bottom: { ru: 'Нижний баннер', kk: 'Төменгі баннер' },
+  top: { ru: 'Верхний баннер', kk: 'Жоғарғы баннер', en: 'Top banner' },
+  middle: { ru: 'Средний баннер', kk: 'Ортаңғы баннер', en: 'Middle banner' },
+  bottom: { ru: 'Нижний баннер', kk: 'Төменгі баннер', en: 'Bottom banner' },
 }
 
 /**
@@ -39,6 +39,7 @@ export const fallbackAdBanners: Record<AdBannerSlot, HomeAdBanner> = {
     label: {
       ru: 'Рекламное место — верхний баннер',
       kk: 'Жарнама орны — жоғарғы баннер',
+      en: 'Advertising space — top banner',
     },
     enabled: true,
   },
@@ -49,6 +50,7 @@ export const fallbackAdBanners: Record<AdBannerSlot, HomeAdBanner> = {
     label: {
       ru: 'Рекламное место — средний баннер',
       kk: 'Жарнама орны — ортаңғы баннер',
+      en: 'Advertising space — middle banner',
     },
     enabled: true,
   },
@@ -59,6 +61,7 @@ export const fallbackAdBanners: Record<AdBannerSlot, HomeAdBanner> = {
     label: {
       ru: 'Рекламное место — нижний баннер',
       kk: 'Жарнама орны — төменгі баннер',
+      en: 'Advertising space — bottom banner',
     },
     enabled: true,
   },

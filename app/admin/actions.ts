@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { categories, type CategorySlug } from '@/lib/i18n'
+import { categories, locales, type CategorySlug, type Lang, type LocalizedText } from '@/lib/i18n'
 import {
   authenticateUser,
   clearSession,
@@ -45,32 +45,38 @@ function getAllowedCategories(values: string[]): CategorySlug[] {
   return values.filter((value): value is CategorySlug => allowed.has(value as CategorySlug))
 }
 
+const formFieldSuffix: Record<Lang, string> = { ru: 'Ru', kk: 'Kk', en: 'En' }
+
+// Reads `${prefix}Ru`, `${prefix}Kk`, `${prefix}En` form fields.
+function getLocalizedField(formData: FormData, prefix: string): LocalizedText {
+  return Object.fromEntries(
+    locales.map((lang) => [
+      lang,
+      String(formData.get(`${prefix}${formFieldSuffix[lang]}`) ?? ''),
+    ]),
+  ) as LocalizedText
+}
+
 function revalidateAdminAndPublic(article?: Article | null) {
   revalidatePath('/admin')
   revalidatePath('/admin/news')
   revalidatePath('/admin/review')
   revalidatePath('/admin/trash')
-  revalidatePath('/ru')
-  revalidatePath('/kk')
-  revalidatePath('/ru/news')
-  revalidatePath('/kk/news')
-  revalidatePath('/ru/categories')
-  revalidatePath('/kk/categories')
-  revalidatePath('/ru/archive')
-  revalidatePath('/kk/archive')
-  revalidatePath('/ru/authors')
-  revalidatePath('/kk/authors')
-  revalidatePath('/ru/search')
-  revalidatePath('/kk/search')
 
-  if (article) {
-    revalidatePath(`/ru/article/${article.slug}`)
-    revalidatePath(`/kk/article/${article.slug}`)
-    revalidatePath(`/ru/author/${article.authorId}`)
-    revalidatePath(`/kk/author/${article.authorId}`)
-    for (const category of article.categories) {
-      revalidatePath(`/ru/category/${category}`)
-      revalidatePath(`/kk/category/${category}`)
+  for (const lang of locales) {
+    revalidatePath(`/${lang}`)
+    revalidatePath(`/${lang}/news`)
+    revalidatePath(`/${lang}/categories`)
+    revalidatePath(`/${lang}/archive`)
+    revalidatePath(`/${lang}/authors`)
+    revalidatePath(`/${lang}/search`)
+
+    if (article) {
+      revalidatePath(`/${lang}/article/${article.slug}`)
+      revalidatePath(`/${lang}/author/${article.authorId}`)
+      for (const category of article.categories) {
+        revalidatePath(`/${lang}/category/${category}`)
+      }
     }
   }
 }
@@ -93,26 +99,11 @@ function parseArticleInput(formData: FormData, actor: AuthUser): SaveArticleInpu
   return {
     id: String(formData.get('id') ?? '') || undefined,
     slug: String(formData.get('slug') ?? ''),
-    title: {
-      ru: String(formData.get('titleRu') ?? ''),
-      kk: String(formData.get('titleKk') ?? ''),
-    },
-    excerpt: {
-      ru: String(formData.get('excerptRu') ?? ''),
-      kk: String(formData.get('excerptKk') ?? ''),
-    },
-    body: {
-      ru: String(formData.get('bodyRu') ?? ''),
-      kk: String(formData.get('bodyKk') ?? ''),
-    },
-    seoTitle: {
-      ru: String(formData.get('seoTitleRu') ?? ''),
-      kk: String(formData.get('seoTitleKk') ?? ''),
-    },
-    seoDescription: {
-      ru: String(formData.get('seoDescriptionRu') ?? ''),
-      kk: String(formData.get('seoDescriptionKk') ?? ''),
-    },
+    title: getLocalizedField(formData, 'title'),
+    excerpt: getLocalizedField(formData, 'excerpt'),
+    body: getLocalizedField(formData, 'body'),
+    seoTitle: getLocalizedField(formData, 'seoTitle'),
+    seoDescription: getLocalizedField(formData, 'seoDescription'),
     mainImage: String(formData.get('mainImage') ?? ''),
     gallery: splitBySeparators(String(formData.get('gallery') ?? '')),
     videoUrls: splitBySeparators(String(formData.get('videoUrls') ?? '')),
@@ -185,6 +176,13 @@ export async function saveArticleAction(
     requireText(input.title.kk, 'Заголовок на казахском')
     requireText(input.body.ru, 'Текст на русском')
     requireText(input.body.kk, 'Текст на казахском')
+
+    // The English version is optional, but once started it must be complete
+    // enough to publish: a title without text (or vice versa) is an error.
+    if (input.title.en.trim() || input.body.en.trim()) {
+      requireText(input.title.en, 'Заголовок на английском')
+      requireText(input.body.en, 'Текст на английском')
+    }
 
     if (input.categories.length === 0) {
       return {
@@ -322,8 +320,7 @@ export async function saveUserAction(
   const password = String(formData.get('password') ?? '')
   const active = formData.get('active') === 'on'
   const avatar = String(formData.get('avatar') ?? '/placeholder-user.jpg')
-  const bioRu = String(formData.get('bioRu') ?? '')
-  const bioKk = String(formData.get('bioKk') ?? '')
+  const bio = getLocalizedField(formData, 'bio')
 
   requireText(name, 'Имя')
   requireText(email, 'E-mail')
@@ -367,10 +364,7 @@ export async function saveUserAction(
     role,
     active,
     avatar,
-    bio: {
-      ru: bioRu,
-      kk: bioKk,
-    },
+    bio,
     passwordHash,
   })
 
@@ -417,10 +411,7 @@ export async function saveAdBannerAction(
       slot,
       href: String(formData.get('href') ?? ''),
       imageSrc,
-      label: {
-        ru: String(formData.get('labelRu') ?? ''),
-        kk: String(formData.get('labelKk') ?? ''),
-      },
+      label: getLocalizedField(formData, 'label'),
       enabled,
     })
   } catch {
@@ -431,8 +422,9 @@ export async function saveAdBannerAction(
   }
 
   revalidatePath('/admin/ads')
-  revalidatePath('/ru')
-  revalidatePath('/kk')
+  for (const lang of locales) {
+    revalidatePath(`/${lang}`)
+  }
 
   return { status: 'idle', message: 'saved' }
 }

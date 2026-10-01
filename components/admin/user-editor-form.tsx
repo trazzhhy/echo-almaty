@@ -97,6 +97,16 @@ export function UserEditorForm({
             className="admin-textarea"
           />
         </div>
+        <div>
+          <label className="admin-label">Описание на английском</label>
+          <textarea
+            name="bioEn"
+            defaultValue={user?.bio.en ?? ''}
+            rows={3}
+            className="admin-textarea"
+          />
+          <p className="admin-help">Необязательно. Если пусто, на английском сайте показывается русское описание.</p>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

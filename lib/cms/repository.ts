@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import type { Article as DbArticle, AuditEntry as DbAuditEntry, Prisma, Subscriber as DbSubscriber, User as DbUser } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
-import { categories, getCategoryBySlug, localize, type CategorySlug, type Lang, type LocalizedText } from '@/lib/i18n'
+import { categories, getCategoryBySlug, locales, localize, type CategorySlug, type Lang, type LocalizedText } from '@/lib/i18n'
 import { normalizeStoredCategories } from './categories'
 import { ensureDatabaseBootstrappedFromSnapshot } from './db-sync'
 import type {
@@ -34,6 +34,12 @@ const VIEW_DEDUP_WINDOW_MS = 6 * 60 * 60 * 1000
 
 function normalizeText(value: string): string {
   return value.trim()
+}
+
+function normalizeLocalizedText(value: Partial<LocalizedText>): LocalizedText {
+  return Object.fromEntries(
+    locales.map((lang) => [lang, normalizeText(value[lang] ?? '')]),
+  ) as LocalizedText
 }
 
 function normalizeTags(values: string[]): string[] {
@@ -124,12 +130,11 @@ function getSearchableText(article: Article, users: User[], lang: Lang) {
     .join(' ')
 
   return [
-    article.title.ru,
-    article.title.kk,
-    article.excerpt.ru,
-    article.excerpt.kk,
-    article.body.ru,
-    article.body.kk,
+    ...locales.flatMap((item) => [
+      article.title[item],
+      article.excerpt[item],
+      article.body[item],
+    ]),
     article.tags.join(' '),
     categoryNames,
     author?.name ?? '',
@@ -204,10 +209,12 @@ function toLocalizedText(value: Prisma.JsonValue): LocalizedText {
       ? (value as Record<string, unknown>)
       : null
 
-  return {
-    ru: typeof objectValue?.ru === 'string' ? objectValue.ru : '',
-    kk: typeof objectValue?.kk === 'string' ? objectValue.kk : '',
-  }
+  return Object.fromEntries(
+    locales.map((lang) => [
+      lang,
+      typeof objectValue?.[lang] === 'string' ? objectValue[lang] : '',
+    ]),
+  ) as LocalizedText
 }
 
 function toIso(value?: Date | null) {
@@ -219,10 +226,7 @@ function toDate(value?: string | null) {
 }
 
 function toDbLocalizedText(value: LocalizedText): Prisma.InputJsonValue {
-  return {
-    ru: normalizeText(value.ru),
-    kk: normalizeText(value.kk),
-  }
+  return normalizeLocalizedText(value)
 }
 
 function toWorkflowStatus(value: Article['previousStatus']) {
@@ -896,26 +900,11 @@ export async function saveArticle(
   const nextArticle: Article = {
     id: existing?.id ?? randomUUID(),
     slug,
-    title: {
-      ru: normalizeText(input.title.ru),
-      kk: normalizeText(input.title.kk),
-    },
-    excerpt: {
-      ru: normalizeText(input.excerpt.ru),
-      kk: normalizeText(input.excerpt.kk),
-    },
-    body: {
-      ru: normalizeText(input.body.ru),
-      kk: normalizeText(input.body.kk),
-    },
-    seoTitle: {
-      ru: normalizeText(input.seoTitle.ru),
-      kk: normalizeText(input.seoTitle.kk),
-    },
-    seoDescription: {
-      ru: normalizeText(input.seoDescription.ru),
-      kk: normalizeText(input.seoDescription.kk),
-    },
+    title: normalizeLocalizedText(input.title),
+    excerpt: normalizeLocalizedText(input.excerpt),
+    body: normalizeLocalizedText(input.body),
+    seoTitle: normalizeLocalizedText(input.seoTitle),
+    seoDescription: normalizeLocalizedText(input.seoDescription),
     mainImage: input.mainImage,
     gallery: input.gallery,
     videoUrls: input.videoUrls,

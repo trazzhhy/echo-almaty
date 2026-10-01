@@ -1,6 +1,7 @@
 'use server'
 
 import { saveNewsletterSubscriber } from '@/lib/cms/repository'
+import { defaultLang, isLang, localize } from '@/lib/i18n'
 
 export type NewsletterState = {
   status: 'idle' | 'success' | 'error'
@@ -12,11 +13,20 @@ export async function subscribeToNewsletterAction(
   formData: FormData,
 ): Promise<NewsletterState> {
   const email = String(formData.get('email') ?? '')
+  const formLang = String(formData.get('lang') ?? '')
+  const lang = isLang(formLang) ? formLang : defaultLang
 
   if (!/^\S+@\S+\.\S+$/.test(email)) {
     return {
       status: 'error',
-      message: 'Укажите корректный e-mail.',
+      message: localize(
+        {
+          ru: 'Укажите корректный e-mail.',
+          kk: 'Дұрыс e-mail енгізіңіз.',
+          en: 'Please enter a valid email address.',
+        },
+        lang,
+      ),
     }
   }
 

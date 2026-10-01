@@ -13,10 +13,27 @@ import {
   getRelatedArticles,
   getUserById,
 } from '@/lib/cms/repository'
-import { getCategoryBySlug, isLang, localize, t, type Lang } from '@/lib/i18n'
+import {
+  getCategoryBySlug,
+  hasTranslation,
+  intlLocales,
+  isLang,
+  languageAlternates,
+  locales,
+  localize,
+  t,
+  type Lang,
+  type LocalizedText,
+} from '@/lib/i18n'
 import { articleImageProps, imageSrcProps } from '@/lib/article-image'
 import { fullDate } from '@/lib/time'
 import { absoluteUrl, getVideoEmbedUrl, paragraphize } from '@/lib/utils'
+
+// SEO fields are optional per language; use them only when filled in for this
+// language so an English page never picks up the Russian SEO title.
+function seoText(seo: LocalizedText, fallback: LocalizedText, lang: Lang) {
+  return hasTranslation(seo, lang) ? seo[lang] : localize(fallback, lang)
+}
 
 export async function generateMetadata({
   params,
@@ -29,24 +46,31 @@ export async function generateMetadata({
 
   if (!article) {
     return {
-      title: 'Материал не найден',
+      title: localize(
+        { ru: 'Материал не найден', kk: 'Материал табылмады', en: 'Story not found' },
+        safeLang,
+      ),
     }
   }
 
-  const title = localize(article.seoTitle, safeLang) || localize(article.title, safeLang)
-  const description =
-    localize(article.seoDescription, safeLang) || localize(article.excerpt, safeLang)
+  const title = seoText(article.seoTitle, article.title, safeLang)
+  const description = seoText(article.seoDescription, article.excerpt, safeLang)
+  const path = `/article/${article.slug}`
+  // An untranslated English page shows the Russian text, so search engines
+  // should index the Russian original instead of a duplicate.
+  const translated = hasTranslation(article.title, safeLang)
 
   return {
     title,
     description,
     alternates: {
-      canonical: `/${safeLang}/article/${article.slug}`,
-      languages: {
-        ru: `/ru/article/${article.slug}`,
-        kk: `/kk/article/${article.slug}`,
-      },
+      canonical: translated ? `/${safeLang}${path}` : `/ru${path}`,
+      languages: languageAlternates(
+        path,
+        locales.filter((item) => hasTranslation(article.title, item)),
+      ),
     },
+    ...(translated ? {} : { robots: { index: false, follow: true } }),
     openGraph: {
       title,
       description,
@@ -72,6 +96,9 @@ export default async function ArticlePage({
     notFound()
   }
 
+  const translated = hasTranslation(article.title, safeLang)
+  // Language of the text actually shown (English falls back to Russian).
+  const contentLang: Lang = translated ? safeLang : 'ru'
   const author = await getUserById(article.authorId)
   const [related, popular24h, popularWeek] = await Promise.all([
     getRelatedArticles(article),
@@ -111,10 +138,16 @@ export default async function ArticlePage({
           )}
         </div>
 
-        <h1 className="mt-4 font-heading text-3xl font-bold leading-tight text-balance sm:text-4xl">
+        {!translated && (
+          <p className="mt-4 text-sm text-muted-foreground">
+            {t(safeLang, 'notTranslated')}
+          </p>
+        )}
+
+        <h1 lang={contentLang} className="mt-4 font-heading text-3xl font-bold leading-tight text-balance sm:text-4xl">
           {localize(article.title, safeLang)}
         </h1>
-        <p className="mt-5 text-lg leading-8 text-muted-foreground">
+        <p lang={contentLang} className="mt-5 text-lg leading-8 text-muted-foreground">
           {localize(article.excerpt, safeLang)}
         </p>
 
@@ -126,7 +159,7 @@ export default async function ArticlePage({
             {article.readMinutes} {t(safeLang, 'minRead')}
           </span>
           <span>
-            {article.views.toLocaleString(safeLang === 'ru' ? 'ru-RU' : 'kk-KZ')} {t(safeLang, 'views')}
+            {article.views.toLocaleString(intlLocales[safeLang])} {t(safeLang, 'views')}
           </span>
           {author && (
             <span>
@@ -149,7 +182,7 @@ export default async function ArticlePage({
           />
         </div>
 
-        <article className="mt-8 space-y-6 text-lg leading-8 text-foreground/90">
+        <article lang={contentLang} className="mt-8 space-y-6 text-lg leading-8 text-foreground/90">
           {paragraphize(localize(article.body, safeLang)).map((paragraph, index) => (
             <p key={index}>{paragraph}</p>
           ))}

@@ -8,7 +8,7 @@ import {
   getPopularArticles,
   type PublicArticleSort,
 } from '@/lib/cms/repository'
-import { isLang, t, type Lang } from '@/lib/i18n'
+import { intlLocales, isLang, localize, t, type Lang } from '@/lib/i18n'
 
 const sortOptions: PublicArticleSort[] = ['newest', 'popular', 'oldest']
 
@@ -30,7 +30,7 @@ export async function generateMetadata({
   const profile = await getAuthorProfile(id, safeLang)
 
   return {
-    title: profile?.author.name ?? (safeLang === 'ru' ? 'Автор' : 'Автор'),
+    title: profile?.author.name ?? localize({ ru: 'Автор', kk: 'Автор', en: 'Author' }, safeLang),
   }
 }
 
@@ -86,7 +86,7 @@ export default async function AuthorPage({
             {profile.author.name}
           </h1>
           <p className="mt-5 max-w-[64ch] text-base leading-7 text-muted-foreground">
-            {profile.author.bio[safeLang]}
+            {localize(profile.author.bio, safeLang)}
           </p>
           <dl className="mt-auto grid grid-cols-2 gap-6 border-t border-foreground/20 pt-6">
             <div>
@@ -98,7 +98,7 @@ export default async function AuthorPage({
             <div>
               <dt className="text-xs text-muted-foreground">{t(safeLang, 'views')}</dt>
               <dd className="mt-1 font-heading text-2xl font-bold tabular-nums">
-                {profile.author.totalViews.toLocaleString(safeLang === 'ru' ? 'ru-RU' : 'kk-KZ')}
+                {profile.author.totalViews.toLocaleString(intlLocales[safeLang])}
               </dd>
             </div>
           </dl>
@@ -128,7 +128,14 @@ export default async function AuthorPage({
         <section>
           <div className="mb-5 flex items-end justify-between gap-4 border-b border-foreground/20 pb-3">
             <h2 className="font-heading text-2xl font-bold tracking-[-0.02em]">
-              {safeLang === 'ru' ? 'Публикации автора' : 'Автор жарияланымдары'}
+              {localize(
+                {
+                  ru: 'Публикации автора',
+                  kk: 'Автор жарияланымдары',
+                  en: 'Stories by this author',
+                },
+                safeLang,
+              )}
             </h2>
             <span className="text-sm tabular-nums text-muted-foreground">
               {articles.length} {t(safeLang, 'materials')}

@@ -5,12 +5,13 @@ import {
   type AdBannerSlot,
   type HomeAdBanner,
 } from '@/lib/home-ads'
+import type { LocalizedText } from '@/lib/i18n'
 
 export type SaveAdBannerInput = {
   slot: AdBannerSlot
   href: string
   imageSrc: string
-  label: { ru: string; kk: string }
+  label: LocalizedText
   enabled: boolean
 }
 
@@ -20,6 +21,7 @@ type DbAdBanner = {
   imageSrc: string
   labelRu: string
   labelKk: string
+  labelEn: string
   enabled: boolean
 }
 
@@ -32,6 +34,7 @@ function mapDbBanner(row: DbAdBanner): HomeAdBanner {
     label: {
       ru: row.labelRu || fallback.label.ru,
       kk: row.labelKk || fallback.label.kk,
+      en: row.labelEn || fallback.label.en,
     },
     enabled: row.enabled,
   }
@@ -82,7 +85,7 @@ export async function getAdminAdBanners(): Promise<HomeAdBanner[]> {
         slot,
         href: '/advertising',
         imageSrc: '',
-        label: { ru: '', kk: '' },
+        label: { ru: '', kk: '', en: '' },
         enabled: false,
       },
   )
@@ -94,6 +97,7 @@ export async function saveAdBanner(input: SaveAdBannerInput) {
     imageSrc: input.imageSrc.trim(),
     labelRu: input.label.ru.trim(),
     labelKk: input.label.kk.trim(),
+    labelEn: input.label.en.trim(),
     enabled: input.enabled,
   }
 

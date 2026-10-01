@@ -26,7 +26,7 @@ export default async function AdminNewsPage({
   const filtered = articles.filter((article) => {
     const matchesQuery =
       normalizedQuery.length === 0 ||
-      `${article.title.ru} ${article.title.kk} ${article.tags.join(' ')}`.toLowerCase().includes(normalizedQuery)
+      `${article.title.ru} ${article.title.kk} ${article.title.en} ${article.tags.join(' ')}`.toLowerCase().includes(normalizedQuery)
     const matchesStatus = !status || article.status === status
     return matchesQuery && matchesStatus
   })

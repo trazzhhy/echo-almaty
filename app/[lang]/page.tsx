@@ -10,9 +10,8 @@ import { PopularWidget } from '@/components/public/popular-widget'
 import { SocialCard } from '@/components/public/social-links'
 import { PublicSectionHeading } from '@/components/public/section-heading'
 import { PublicSiteShell } from '@/components/public/site-shell'
-import { isLang, localize, t, type Lang } from '@/lib/i18n'
+import { isLang, languageAlternates, localize, t, type Lang } from '@/lib/i18n'
 import { getHomePageData } from '@/lib/cms/repository'
-import { siteConfig } from '@/lib/site-config'
 
 export async function generateMetadata({
   params,
@@ -22,18 +21,22 @@ export async function generateMetadata({
   const { lang } = await params
   const safeLang = isLang(lang) ? lang : 'ru'
 
+  const headline = localize(
+    {
+      ru: 'Главные новости Казахстана',
+      kk: 'Қазақстанның басты жаңалықтары',
+      en: 'Top news from Kazakhstan',
+    },
+    safeLang,
+  )
+
   return {
-    title:
-      safeLang === 'ru'
-        ? 'Главные новости Казахстана'
-        : 'Қазақстанның басты жаңалықтары',
-    description: siteConfig.description,
+    // The [lang] layout's title template doesn't apply to its own segment.
+    title: { absolute: `${headline} | ${t(safeLang, 'brandTitle')}` },
+    description: t(safeLang, 'siteDescription'),
     alternates: {
       canonical: `/${safeLang}`,
-      languages: {
-        ru: '/ru',
-        kk: '/kk',
-      },
+      languages: languageAlternates(),
     },
   }
 }
@@ -59,9 +62,14 @@ export default async function HomePage({
             {t(safeLang, 'brandTitle')}
           </h1>
           <p className="mt-4 text-base leading-7 text-muted-foreground">
-            {safeLang === 'ru'
-              ? 'На сайте пока нет опубликованных материалов. Если база только что создана, откройте админку или выполните импорт данных в PostgreSQL.'
-              : 'Сайтта әлі жарияланған материалдар жоқ. Егер база жаңа ғана жасалса, админканы ашыңыз немесе деректерді PostgreSQL-ге импорттаңыз.'}
+            {localize(
+              {
+                ru: 'На сайте пока нет опубликованных материалов. Если база только что создана, откройте админку или выполните импорт данных в PostgreSQL.',
+                kk: 'Сайтта әлі жарияланған материалдар жоқ. Егер база жаңа ғана жасалса, админканы ашыңыз немесе деректерді PostgreSQL-ге импорттаңыз.',
+                en: 'There are no published stories yet. If the database was just created, open the admin panel or import the data into PostgreSQL.',
+              },
+              safeLang,
+            )}
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
@@ -74,7 +82,7 @@ export default async function HomePage({
               href="/admin"
               className="bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
             >
-              {safeLang === 'ru' ? 'Открыть админку' : 'Админканы ашу'}
+              {localize({ ru: 'Открыть админку', kk: 'Админканы ашу', en: 'Open admin panel' }, safeLang)}
             </Link>
           </div>
         </section>

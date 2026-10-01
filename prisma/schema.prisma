@@ -154,6 +154,7 @@ model AdBanner {
   imageSrc  String       @default("")
   labelRu   String       @default("")
   labelKk   String       @default("")
+  labelEn   String       @default("")
   enabled   Boolean      @default(false)
   updatedAt DateTime     @updatedAt
 }

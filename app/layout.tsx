@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Manrope, Roboto, Roboto_Condensed } from 'next/font/google'
 import { headers } from 'next/headers'
+import { defaultLang, isLang } from '@/lib/i18n'
 import { siteConfig } from '@/lib/site-config'
 import './globals.css'
 
@@ -63,7 +64,8 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   const headerList = await headers()
-  const lang = headerList.get('x-echo-almaty-lang') === 'kk' ? 'kk' : 'ru'
+  const headerLang = headerList.get('x-echo-almaty-lang') ?? ''
+  const lang = isLang(headerLang) ? headerLang : defaultLang
 
   return (
     <html

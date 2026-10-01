@@ -49,6 +49,7 @@ export function ArticleEditorForm({
           <h2 className="mt-1 text-2xl font-bold">Напишите текст новости</h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
             Сначала заполните русскую версию, затем добавьте казахский перевод.
+            Английская версия необязательна: пока она пустая, на английском сайте показывается русский текст.
           </p>
         </div>
         <div className="space-y-6">
@@ -113,6 +114,40 @@ export function ArticleEditorForm({
               rows={10}
               className="admin-textarea"
             />
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <h3 className="border-b border-border pb-3 text-xl font-bold">
+            Английская версия
+            <span className="ml-2 text-sm font-normal text-muted-foreground">необязательно</span>
+          </h3>
+          <div>
+            <label className="admin-label">Title</label>
+            <input
+              name="titleEn"
+              defaultValue={article?.title.en ?? ''}
+              className="admin-field"
+            />
+          </div>
+          <div>
+            <label className="admin-label">Short description</label>
+            <textarea
+              name="excerptEn"
+              defaultValue={article?.excerpt.en ?? ''}
+              rows={4}
+              className="admin-textarea"
+            />
+          </div>
+          <div>
+            <label className="admin-label">Full text</label>
+            <textarea
+              name="bodyEn"
+              defaultValue={article?.body.en ?? ''}
+              rows={10}
+              className="admin-textarea"
+            />
+            <p className="admin-help">Если заполняете английскую версию, укажите и заголовок, и текст.</p>
           </div>
         </div>
 
@@ -187,6 +222,14 @@ export function ArticleEditorForm({
             />
           </div>
           <div>
+            <label className="admin-label">Заголовок для поиска на английском</label>
+            <input
+              name="seoTitleEn"
+              defaultValue={article?.seoTitle.en ?? ''}
+              className="admin-field"
+            />
+          </div>
+          <div>
             <label className="admin-label">Описание для поиска на русском</label>
             <textarea
               name="seoDescriptionRu"
@@ -200,6 +243,15 @@ export function ArticleEditorForm({
             <textarea
               name="seoDescriptionKk"
               defaultValue={article?.seoDescription.kk ?? ''}
+              rows={3}
+              className="admin-textarea"
+            />
+          </div>
+          <div>
+            <label className="admin-label">Описание для поиска на английском</label>
+            <textarea
+              name="seoDescriptionEn"
+              defaultValue={article?.seoDescription.en ?? ''}
               rows={3}
               className="admin-textarea"
             />

@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { PublicSiteShell } from '@/components/public/site-shell'
 import { getArchiveData } from '@/lib/cms/repository'
-import { isLang, t, type Lang } from '@/lib/i18n'
+import { isLang, localize, t, type Lang } from '@/lib/i18n'
 import { longDate, monthName } from '@/lib/time'
 
 export const dynamic = 'force-dynamic'
@@ -22,7 +22,14 @@ export async function generateMetadata({
   const safeLang = isLang(lang) ? lang : 'ru'
 
   return {
-    title: safeLang === 'ru' ? 'Архив Эхо Алматы' : 'Эхо Алматы мұрағаты',
+    title: localize(
+      {
+        ru: 'Архив Эхо Алматы',
+        kk: 'Эхо Алматы мұрағаты',
+        en: 'Echo Almaty archive',
+      },
+      safeLang,
+    ),
   }
 }
 
@@ -55,9 +62,14 @@ export default async function ArchivePage({
           {t(safeLang, 'archiveByDate')}
         </h1>
         <p className="mt-5 max-w-[64ch] text-base leading-7 text-muted-foreground">
-          {safeLang === 'ru'
-            ? 'Все опубликованные материалы в хронологическом порядке. Выберите год и месяц, чтобы восстановить повестку конкретного периода.'
-            : 'Барлық жарияланған материалдар хронологиялық тәртіппен. Белгілі бір кезеңнің күн тәртібін көру үшін жыл мен айды таңдаңыз.'}
+          {localize(
+            {
+              ru: 'Все опубликованные материалы в хронологическом порядке. Выберите год и месяц, чтобы восстановить повестку конкретного периода.',
+              kk: 'Барлық жарияланған материалдар хронологиялық тәртіппен. Белгілі бір кезеңнің күн тәртібін көру үшін жыл мен айды таңдаңыз.',
+              en: 'Every published story in chronological order. Choose a year and month to revisit the agenda of a specific period.',
+            },
+            safeLang,
+          )}
         </p>
       </header>
 
@@ -104,7 +116,7 @@ export default async function ArchivePage({
 
       <div className="mt-10 flex items-end justify-between gap-5 border-b border-foreground/20 pb-3">
         <h2 className="font-heading text-2xl font-bold tracking-[-0.02em]">
-          {safeLang === 'ru' ? 'Хронология' : 'Хронология'}
+          {localize({ ru: 'Хронология', kk: 'Хронология', en: 'Timeline' }, safeLang)}
         </h2>
         <p className="text-sm tabular-nums text-muted-foreground">
           {t(safeLang, 'foundMaterials')}: {archive.total}
@@ -134,10 +146,10 @@ export default async function ArchivePage({
                   >
                     <div>
                       <p className="font-heading text-lg font-semibold leading-snug text-balance">
-                        {article.title[safeLang]}
+                        {localize(article.title, safeLang)}
                       </p>
                       <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
-                        {article.excerpt[safeLang]}
+                        {localize(article.excerpt, safeLang)}
                       </p>
                     </div>
                     <span className="text-xs tabular-nums text-muted-foreground">

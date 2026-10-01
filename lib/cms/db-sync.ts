@@ -1,4 +1,4 @@
-import { type LocalizedText } from '@/lib/i18n'
+import { locales, type LocalizedText } from '@/lib/i18n'
 import { prisma } from '@/lib/prisma'
 import { normalizeStoredCategories } from './categories'
 import type { Article, AuditEntry, CMSData, Subscriber, User } from './types'
@@ -25,11 +25,11 @@ function toDate(value?: string | null) {
   return value ? new Date(value) : null
 }
 
-function toJson(value: LocalizedText) {
-  return {
-    ru: normalizeText(value.ru),
-    kk: normalizeText(value.kk),
-  }
+// Snapshots written before English support have no `en` key.
+function toJson(value: Partial<LocalizedText>): LocalizedText {
+  return Object.fromEntries(
+    locales.map((lang) => [lang, normalizeText(value[lang] ?? '')]),
+  ) as LocalizedText
 }
 
 function toWorkflowStatus(value: Article['previousStatus']) {
