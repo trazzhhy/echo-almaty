@@ -63,7 +63,14 @@ export function PublicSiteFooter({
             <li>info@echoalmaty.kz</li>
             <li>ads@echoalmaty.kz</li>
             <li>+7 (7172) 00-00-00</li>
-            <li>{lang === 'ru' ? 'Алматы, Казахстан' : 'Алматы, Қазақстан'}</li>
+            <li>{localize(
+              {
+                ru: 'Алматы, Казахстан',
+                kk: 'Алматы, Қазақстан',
+                en: 'Almaty, Kazakhstan',
+              },
+              lang,
+            )}</li>
           </ul>
         </div>
       </div>

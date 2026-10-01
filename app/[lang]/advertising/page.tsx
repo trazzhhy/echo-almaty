@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { PublicPageIntro } from '@/components/public/page-intro'
 import { PublicSiteShell } from '@/components/public/site-shell'
-import { isLang, t, type Lang } from '@/lib/i18n'
+import { isLang, localize, t, type Lang } from '@/lib/i18n'
 
 export async function generateMetadata({
   params,
@@ -28,24 +28,46 @@ export default async function AdvertisingPage({
     <PublicSiteShell lang={safeLang} path="/advertising" mainClassName="max-w-5xl py-8">
       <PublicPageIntro
         eyebrow={t(safeLang, 'advertising')}
-        title={safeLang === 'ru' ? 'Размещение рекламы на Эхо Алматы' : 'Эхо Алматы сайтындағы жарнама'}
+        title={localize(
+          {
+            ru: 'Размещение рекламы на Эхо Алматы',
+            kk: 'Эхо Алматы сайтындағы жарнама',
+            en: 'Advertise with Echo Almaty',
+          },
+          safeLang,
+        )}
         description={
-          safeLang === 'ru'
-            ? 'Спецпроекты, баннеры, нативные форматы и редакционные партнёрства.'
-            : 'Арнайы жобалар, баннерлер, нативті форматтар және редакциялық серіктестіктер.'
+          localize(
+            {
+              ru: 'Спецпроекты, баннеры, нативные форматы и редакционные партнёрства.',
+              kk: 'Арнайы жобалар, баннерлер, нативті форматтар және редакциялық серіктестіктер.',
+              en: 'Special projects, banners, native formats and editorial partnerships.',
+            },
+            safeLang,
+          )
         }
       />
 
       <div className="news-prose-card">
         <p>
-          {safeLang === 'ru'
-            ? 'Для рекламодателей доступны медийные размещения в ленте, брендированные спецпроекты, а также интеграции в тематических разделах и подборках.'
-            : 'Жарнама берушілер үшін лентадағы медиялық орналастырулар, брендтелген арнайы жобалар және тақырыптық бөлімдер мен топтамалардағы интеграциялар қолжетімді.'}
+          {localize(
+            {
+              ru: 'Для рекламодателей доступны медийные размещения в ленте, брендированные спецпроекты, а также интеграции в тематических разделах и подборках.',
+              kk: 'Жарнама берушілер үшін лентадағы медиялық орналастырулар, брендтелген арнайы жобалар және тақырыптық бөлімдер мен топтамалардағы интеграциялар қолжетімді.',
+              en: 'Advertisers can choose display placements in the news feed, branded special projects, and integrations in topic sections and curated collections.',
+            },
+            safeLang,
+          )}
         </p>
         <p>
-          {safeLang === 'ru'
-            ? 'Мы можем подготовить индивидуальный медиаплан под региональные, республиканские и отраслевые кампании.'
-            : 'Біз өңірлік, республикалық және салалық науқандарға арналған жеке медиажоспар дайындай аламыз.'}
+          {localize(
+            {
+              ru: 'Мы можем подготовить индивидуальный медиаплан под региональные, республиканские и отраслевые кампании.',
+              kk: 'Біз өңірлік, республикалық және салалық науқандарға арналған жеке медиажоспар дайындай аламыз.',
+              en: 'We can prepare a custom media plan for regional, national and industry campaigns.',
+            },
+            safeLang,
+          )}
         </p>
         <p>
           ads@echoalmaty.kz

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { categories, type CategorySlug } from '@/lib/i18n'
+import { categories, locales, type CategorySlug, type Lang, type LocalizedText } from '@/lib/i18n'
 import {
   authenticateUser,
   clearSession,
@@ -31,6 +31,14 @@ import {
 } from '@/lib/cms/repository'
 import type { Article, AuthUser, SaveArticleInput } from '@/lib/cms/types'
 import { saveAdBanner } from '@/lib/cms/ad-banners'
+import {
+  getMissingLangs,
+  getSourceLang,
+  isTranslationConfigured,
+  translatableFields,
+  translateMissing,
+  TranslationError,
+} from '@/lib/cms/translation'
 import { adBannerSlots, type AdBannerSlot } from '@/lib/home-ads'
 import { fromDateTimeLocalValue } from '@/lib/time'
 import { splitBySeparators } from '@/lib/utils'
@@ -45,32 +53,38 @@ function getAllowedCategories(values: string[]): CategorySlug[] {
   return values.filter((value): value is CategorySlug => allowed.has(value as CategorySlug))
 }
 
+const formFieldSuffix: Record<Lang, string> = { ru: 'Ru', kk: 'Kk', en: 'En' }
+
+// Reads `${prefix}Ru`, `${prefix}Kk`, `${prefix}En` form fields.
+function getLocalizedField(formData: FormData, prefix: string): LocalizedText {
+  return Object.fromEntries(
+    locales.map((lang) => [
+      lang,
+      String(formData.get(`${prefix}${formFieldSuffix[lang]}`) ?? ''),
+    ]),
+  ) as LocalizedText
+}
+
 function revalidateAdminAndPublic(article?: Article | null) {
   revalidatePath('/admin')
   revalidatePath('/admin/news')
   revalidatePath('/admin/review')
   revalidatePath('/admin/trash')
-  revalidatePath('/ru')
-  revalidatePath('/kk')
-  revalidatePath('/ru/news')
-  revalidatePath('/kk/news')
-  revalidatePath('/ru/categories')
-  revalidatePath('/kk/categories')
-  revalidatePath('/ru/archive')
-  revalidatePath('/kk/archive')
-  revalidatePath('/ru/authors')
-  revalidatePath('/kk/authors')
-  revalidatePath('/ru/search')
-  revalidatePath('/kk/search')
 
-  if (article) {
-    revalidatePath(`/ru/article/${article.slug}`)
-    revalidatePath(`/kk/article/${article.slug}`)
-    revalidatePath(`/ru/author/${article.authorId}`)
-    revalidatePath(`/kk/author/${article.authorId}`)
-    for (const category of article.categories) {
-      revalidatePath(`/ru/category/${category}`)
-      revalidatePath(`/kk/category/${category}`)
+  for (const lang of locales) {
+    revalidatePath(`/${lang}`)
+    revalidatePath(`/${lang}/news`)
+    revalidatePath(`/${lang}/categories`)
+    revalidatePath(`/${lang}/archive`)
+    revalidatePath(`/${lang}/authors`)
+    revalidatePath(`/${lang}/search`)
+
+    if (article) {
+      revalidatePath(`/${lang}/article/${article.slug}`)
+      revalidatePath(`/${lang}/author/${article.authorId}`)
+      for (const category of article.categories) {
+        revalidatePath(`/${lang}/category/${category}`)
+      }
     }
   }
 }
@@ -78,6 +92,24 @@ function revalidateAdminAndPublic(article?: Article | null) {
 function requireText(value: string, label: string) {
   if (!value.trim()) {
     throw new Error(`Поле «${label}» обязательно.`)
+  }
+}
+
+const languageNamesRu: Record<Lang, string> = { ru: 'русском', kk: 'казахском', en: 'английском' }
+const languageAdjectivesRu: Record<Lang, string> = { ru: 'русский', kk: 'казахский', en: 'английский' }
+
+// One language is enough; the others can be machine-translated. A language
+// that is started must have both a title and text.
+function validateArticleLanguages(input: SaveArticleInput) {
+  for (const lang of locales) {
+    if (input.title[lang].trim() || input.body[lang].trim()) {
+      requireText(input.title[lang], `Заголовок на ${languageNamesRu[lang]}`)
+      requireText(input.body[lang], `Текст на ${languageNamesRu[lang]}`)
+    }
+  }
+
+  if (!getSourceLang(input)) {
+    throw new Error('Заполните заголовок и текст хотя бы на одном языке.')
   }
 }
 
@@ -93,26 +125,11 @@ function parseArticleInput(formData: FormData, actor: AuthUser): SaveArticleInpu
   return {
     id: String(formData.get('id') ?? '') || undefined,
     slug: String(formData.get('slug') ?? ''),
-    title: {
-      ru: String(formData.get('titleRu') ?? ''),
-      kk: String(formData.get('titleKk') ?? ''),
-    },
-    excerpt: {
-      ru: String(formData.get('excerptRu') ?? ''),
-      kk: String(formData.get('excerptKk') ?? ''),
-    },
-    body: {
-      ru: String(formData.get('bodyRu') ?? ''),
-      kk: String(formData.get('bodyKk') ?? ''),
-    },
-    seoTitle: {
-      ru: String(formData.get('seoTitleRu') ?? ''),
-      kk: String(formData.get('seoTitleKk') ?? ''),
-    },
-    seoDescription: {
-      ru: String(formData.get('seoDescriptionRu') ?? ''),
-      kk: String(formData.get('seoDescriptionKk') ?? ''),
-    },
+    title: getLocalizedField(formData, 'title'),
+    excerpt: getLocalizedField(formData, 'excerpt'),
+    body: getLocalizedField(formData, 'body'),
+    seoTitle: getLocalizedField(formData, 'seoTitle'),
+    seoDescription: getLocalizedField(formData, 'seoDescription'),
     mainImage: String(formData.get('mainImage') ?? ''),
     gallery: splitBySeparators(String(formData.get('gallery') ?? '')),
     videoUrls: splitBySeparators(String(formData.get('videoUrls') ?? '')),
@@ -180,11 +197,8 @@ export async function saveArticleAction(
       }
     }
 
-    const input = parseArticleInput(formData, actor)
-    requireText(input.title.ru, 'Заголовок на русском')
-    requireText(input.title.kk, 'Заголовок на казахском')
-    requireText(input.body.ru, 'Текст на русском')
-    requireText(input.body.kk, 'Текст на казахском')
+    let input = parseArticleInput(formData, actor)
+    validateArticleLanguages(input)
 
     if (input.categories.length === 0) {
       return {
@@ -240,6 +254,23 @@ export async function saveArticleAction(
       }
     }
 
+    // Fill empty languages before saving. If translation fails nothing is
+    // saved; the editor can retry or untick auto-translate to save as is.
+    const autoTranslate = formData.get('autoTranslate') === 'on'
+    if (autoTranslate && isTranslationConfigured() && getMissingLangs(input).length > 0) {
+      try {
+        input = { ...input, ...(await translateMissing(input)).texts }
+      } catch (error) {
+        if (error instanceof TranslationError) {
+          return {
+            status: 'error',
+            message: `${error.message} Чтобы сохранить без перевода, снимите галочку «Переводить автоматически».`,
+          }
+        }
+        throw error
+      }
+    }
+
     const nextArticle = await saveArticle(
       actor,
       input,
@@ -266,6 +297,60 @@ export async function saveArticleAction(
 
   // redirect() throws internally, so it must stay outside the try/catch above.
   redirect(`/admin/news/${savedArticleId}`)
+}
+
+export type TranslateArticleState = {
+  status: 'success' | 'error'
+  message: string
+  // Form field name (e.g. "titleEn") → translated value, for empty fields only.
+  fields: Record<string, string>
+}
+
+export async function translateArticleDraftAction(
+  formData: FormData,
+): Promise<TranslateArticleState> {
+  const actor = await getCurrentUser()
+  if (!actor || !canCreateNews(actor)) {
+    return { status: 'error', message: 'Недостаточно прав для работы с материалами.', fields: {} }
+  }
+
+  const input = parseArticleInput(formData, actor)
+  if (!getSourceLang(input)) {
+    return {
+      status: 'error',
+      message: 'Сначала заполните заголовок и текст хотя бы на одном языке.',
+      fields: {},
+    }
+  }
+
+  try {
+    const { texts, langs } = await translateMissing(input)
+    if (langs.length === 0) {
+      return { status: 'success', message: 'Все языки уже заполнены.', fields: {} }
+    }
+
+    const fields: Record<string, string> = {}
+    for (const lang of langs) {
+      for (const field of translatableFields) {
+        if (!input[field][lang].trim() && texts[field][lang]) {
+          fields[`${field}${formFieldSuffix[lang]}`] = texts[field][lang]
+        }
+      }
+    }
+
+    const names = langs.map((lang) => languageAdjectivesRu[lang])
+    return {
+      status: 'success',
+      message: `Готово: добавлен ${names.join(', ')} перевод. Проверьте текст перед сохранением.`,
+      fields,
+    }
+  } catch (error) {
+    return {
+      status: 'error',
+      message: error instanceof TranslationError ? error.message : 'Не удалось перевести материал.',
+      fields: {},
+    }
+  }
 }
 
 export async function updateArticleStateAction(formData: FormData) {
@@ -322,8 +407,7 @@ export async function saveUserAction(
   const password = String(formData.get('password') ?? '')
   const active = formData.get('active') === 'on'
   const avatar = String(formData.get('avatar') ?? '/placeholder-user.jpg')
-  const bioRu = String(formData.get('bioRu') ?? '')
-  const bioKk = String(formData.get('bioKk') ?? '')
+  const bio = getLocalizedField(formData, 'bio')
 
   requireText(name, 'Имя')
   requireText(email, 'E-mail')
@@ -367,10 +451,7 @@ export async function saveUserAction(
     role,
     active,
     avatar,
-    bio: {
-      ru: bioRu,
-      kk: bioKk,
-    },
+    bio,
     passwordHash,
   })
 
@@ -417,10 +498,7 @@ export async function saveAdBannerAction(
       slot,
       href: String(formData.get('href') ?? ''),
       imageSrc,
-      label: {
-        ru: String(formData.get('labelRu') ?? ''),
-        kk: String(formData.get('labelKk') ?? ''),
-      },
+      label: getLocalizedField(formData, 'label'),
       enabled,
     })
   } catch {
@@ -431,8 +509,9 @@ export async function saveAdBannerAction(
   }
 
   revalidatePath('/admin/ads')
-  revalidatePath('/ru')
-  revalidatePath('/kk')
+  for (const lang of locales) {
+    revalidatePath(`/${lang}`)
+  }
 
   return { status: 'idle', message: 'saved' }
 }

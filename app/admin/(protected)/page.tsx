@@ -6,6 +6,7 @@ import { getCurrentUser } from '@/lib/cms/auth'
 import { canAccessHistory, canManageUsers } from '@/lib/cms/permissions'
 import { getAdminArticles, getAuditEntries, getDashboardStats } from '@/lib/cms/repository'
 import { fullDate } from '@/lib/time'
+import { localize } from '@/lib/i18n'
 
 export default async function AdminDashboardPage() {
   const user = await getCurrentUser()
@@ -125,7 +126,7 @@ export default async function AdminDashboardPage() {
                 className="flex min-h-20 flex-col gap-3 py-4 transition hover:bg-secondary/50 sm:flex-row sm:items-center sm:justify-between sm:px-2"
               >
                 <div>
-                  <p className="font-medium">{article.title.ru}</p>
+                  <p className="font-medium">{localize(article.title, 'ru')}</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Обновлено {fullDate(article.updatedAt, 'ru')}
                   </p>

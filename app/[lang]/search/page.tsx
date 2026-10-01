@@ -34,9 +34,14 @@ export async function generateMetadata({
 
   return {
     title:
-      safeLang === 'ru'
-        ? `Поиск: ${q || 'новости'}`
-        : `Іздеу: ${q || 'жаңалықтар'}`,
+      localize(
+        {
+          ru: `Поиск: ${q || 'новости'}`,
+          kk: `Іздеу: ${q || 'жаңалықтар'}`,
+          en: `Search: ${q || 'news'}`,
+        },
+        safeLang,
+      ),
   }
 }
 
@@ -75,9 +80,14 @@ export default async function SearchPage({
           {q ? `«${q}»` : t(safeLang, 'search')}
         </h1>
         <p className="mt-5 max-w-[68ch] text-base leading-7 text-muted-foreground">
-          {safeLang === 'ru'
-            ? 'Ищите по заголовкам, полному тексту, тегам, категориям, источникам и авторам. Фильтры помогут сузить выдачу.'
-            : 'Тақырыптар, толық мәтін, тегтер, санаттар, дереккөздер және авторлар бойынша іздеңіз. Сүзгілер нәтижені нақтылауға көмектеседі.'}
+          {localize(
+            {
+              ru: 'Ищите по заголовкам, полному тексту, тегам, категориям, источникам и авторам. Фильтры помогут сузить выдачу.',
+              kk: 'Тақырыптар, толық мәтін, тегтер, санаттар, дереккөздер және авторлар бойынша іздеңіз. Сүзгілер нәтижені нақтылауға көмектеседі.',
+              en: 'Search headlines, full text, tags, categories, sources and authors. Use the filters to narrow down the results.',
+            },
+            safeLang,
+          )}
         </p>
       </header>
 
@@ -144,7 +154,14 @@ export default async function SearchPage({
         <section>
           <div className="mb-5 flex items-end justify-between gap-4 border-b border-foreground/20 pb-3">
             <h2 className="font-heading text-2xl font-bold tracking-[-0.02em]">
-              {safeLang === 'ru' ? 'Найденные материалы' : 'Табылған материалдар'}
+              {localize(
+                {
+                  ru: 'Найденные материалы',
+                  kk: 'Табылған материалдар',
+                  en: 'Matching stories',
+                },
+                safeLang,
+              )}
             </h2>
             <span className="text-sm tabular-nums text-muted-foreground">
               {results.length} {t(safeLang, 'materials')}

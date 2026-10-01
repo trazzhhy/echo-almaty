@@ -49,7 +49,7 @@ export function AdBannerForm({ banner }: { banner: HomeAdBanner }) {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         <div>
           <label className="admin-label">Описание на русском</label>
           <input
@@ -64,6 +64,14 @@ export function AdBannerForm({ banner }: { banner: HomeAdBanner }) {
           <input
             name="labelKk"
             defaultValue={banner.label.kk}
+            className="admin-field"
+          />
+        </div>
+        <div>
+          <label className="admin-label">Описание на английском</label>
+          <input
+            name="labelEn"
+            defaultValue={banner.label.en}
             className="admin-field"
           />
         </div>

@@ -1,7 +1,12 @@
 'use client'
 
-import { startTransition, useActionState, type FormEvent } from 'react'
-import { saveArticleAction, type AdminFormState } from '@/app/admin/actions'
+import { startTransition, useActionState, useRef, useState, useTransition, type FormEvent } from 'react'
+import {
+  saveArticleAction,
+  translateArticleDraftAction,
+  type AdminFormState,
+  type TranslateArticleState,
+} from '@/app/admin/actions'
 import { categories, localize, type Lang } from '@/lib/i18n'
 import { toDateTimeLocalValue } from '@/lib/time'
 import type { Article, AuthUser } from '@/lib/cms/types'
@@ -19,12 +24,17 @@ export function ArticleEditorForm({
   article,
   authors,
   currentUser,
+  translationEnabled,
 }: {
   article: Article | null
   authors: AuthUser[]
   currentUser: AuthUser
+  translationEnabled: boolean
 }) {
   const [state, formAction, pending] = useActionState(saveArticleAction, initialState)
+  const formRef = useRef<HTMLFormElement>(null)
+  const [translation, setTranslation] = useState<TranslateArticleState | null>(null)
+  const [translating, startTranslating] = useTransition()
   const canChangeAuthor = currentUser.role === 'admin' || currentUser.role === 'editor'
   const canPublish = currentUser.role === 'admin' || currentUser.role === 'editor'
   const isModerator = currentUser.role === 'moderator'
@@ -39,8 +49,30 @@ export function ArticleEditorForm({
     startTransition(() => formAction(formData))
   }
 
+  // Fills only the fields that are still empty, so nothing typed meanwhile
+  // is overwritten.
+  function handleTranslate() {
+    const form = formRef.current
+    if (!form) return
+
+    setTranslation(null)
+    startTranslating(async () => {
+      const result = await translateArticleDraftAction(new FormData(form))
+      for (const [name, value] of Object.entries(result.fields)) {
+        const field = form.elements.namedItem(name)
+        if (
+          (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) &&
+          !field.value.trim()
+        ) {
+          field.value = value
+        }
+      }
+      setTranslation(result)
+    })
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="admin-editor mx-auto max-w-5xl space-y-6">
+    <form ref={formRef} onSubmit={handleSubmit} className="admin-editor mx-auto max-w-5xl space-y-6">
       <input type="hidden" name="id" value={article?.id ?? ''} />
 
       <section className="grid gap-8">
@@ -48,7 +80,9 @@ export function ArticleEditorForm({
           <p className="text-sm font-semibold text-primary">Шаг 1</p>
           <h2 className="mt-1 text-2xl font-bold">Напишите текст новости</h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Сначала заполните русскую версию, затем добавьте казахский перевод.
+            Заполните материал хотя бы на одном языке: заголовок и полный текст.
+            Остальные языки можно перевести автоматически. Если начали заполнять язык,
+            укажите в нём и заголовок, и текст.
           </p>
         </div>
         <div className="space-y-6">
@@ -57,7 +91,6 @@ export function ArticleEditorForm({
             <label className="admin-label">Заголовок</label>
             <input
               name="titleRu"
-              required
               defaultValue={article?.title.ru ?? ''}
               className="admin-field"
             />
@@ -76,7 +109,6 @@ export function ArticleEditorForm({
             <label className="admin-label">Полный текст</label>
             <textarea
               name="bodyRu"
-              required
               defaultValue={article?.body.ru ?? ''}
               rows={10}
               className="admin-textarea"
@@ -90,7 +122,6 @@ export function ArticleEditorForm({
             <label className="admin-label">Тақырып</label>
             <input
               name="titleKk"
-              required
               defaultValue={article?.title.kk ?? ''}
               className="admin-field"
             />
@@ -108,12 +139,87 @@ export function ArticleEditorForm({
             <label className="admin-label">Толық мәтін</label>
             <textarea
               name="bodyKk"
-              required
               defaultValue={article?.body.kk ?? ''}
               rows={10}
               className="admin-textarea"
             />
           </div>
+        </div>
+
+        <div className="space-y-6">
+          <h3 className="border-b border-border pb-3 text-xl font-bold">
+            Английская версия
+          </h3>
+          <div>
+            <label className="admin-label">Title</label>
+            <input
+              name="titleEn"
+              defaultValue={article?.title.en ?? ''}
+              className="admin-field"
+            />
+          </div>
+          <div>
+            <label className="admin-label">Short description</label>
+            <textarea
+              name="excerptEn"
+              defaultValue={article?.excerpt.en ?? ''}
+              rows={4}
+              className="admin-textarea"
+            />
+          </div>
+          <div>
+            <label className="admin-label">Full text</label>
+            <textarea
+              name="bodyEn"
+              defaultValue={article?.body.en ?? ''}
+              rows={10}
+              className="admin-textarea"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-4 rounded-md border border-border bg-card p-5">
+          <h3 className="text-lg font-bold">Автоматический перевод</h3>
+          {translationEnabled ? (
+            <>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Пустые поля других языков заполняются переводом с заполненного языка.
+                Уже написанный текст не меняется.
+              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleTranslate}
+                  disabled={translating || pending}
+                  className="admin-btn-secondary"
+                >
+                  {translating ? 'Переводим...' : 'Перевести недостающие языки'}
+                </button>
+                <label className="flex items-center gap-3 text-base">
+                  <input type="checkbox" name="autoTranslate" defaultChecked />
+                  <span>Переводить автоматически при сохранении</span>
+                </label>
+              </div>
+              {translating && (
+                <p className="admin-help">Перевод длинного материала может занять до минуты.</p>
+              )}
+              {translation && (
+                <p
+                  role={translation.status === 'error' ? 'alert' : 'status'}
+                  className={`text-sm font-medium ${
+                    translation.status === 'error' ? 'text-destructive' : 'text-primary'
+                  }`}
+                >
+                  {translation.message}
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="text-sm leading-6 text-muted-foreground">
+              Автоперевод отключён: не задан ключ ANTHROPIC_API_KEY. Пока его нет, заполняйте языки
+              вручную; пустые языки на сайте показывают текст оригинала.
+            </p>
+          )}
         </div>
 
         <div className="border-t border-border pt-6">
@@ -187,6 +293,14 @@ export function ArticleEditorForm({
             />
           </div>
           <div>
+            <label className="admin-label">Заголовок для поиска на английском</label>
+            <input
+              name="seoTitleEn"
+              defaultValue={article?.seoTitle.en ?? ''}
+              className="admin-field"
+            />
+          </div>
+          <div>
             <label className="admin-label">Описание для поиска на русском</label>
             <textarea
               name="seoDescriptionRu"
@@ -200,6 +314,15 @@ export function ArticleEditorForm({
             <textarea
               name="seoDescriptionKk"
               defaultValue={article?.seoDescription.kk ?? ''}
+              rows={3}
+              className="admin-textarea"
+            />
+          </div>
+          <div>
+            <label className="admin-label">Описание для поиска на английском</label>
+            <textarea
+              name="seoDescriptionEn"
+              defaultValue={article?.seoDescription.en ?? ''}
               rows={3}
               className="admin-textarea"
             />

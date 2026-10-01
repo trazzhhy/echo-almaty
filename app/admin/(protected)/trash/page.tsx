@@ -5,6 +5,7 @@ import { SubmitButton } from '@/components/admin/submit-button'
 import { getCurrentUser } from '@/lib/cms/auth'
 import { getAdminArticles } from '@/lib/cms/repository'
 import { fullDate } from '@/lib/time'
+import { localize } from '@/lib/i18n'
 
 export default async function TrashPage() {
   const user = await getCurrentUser()
@@ -28,7 +29,7 @@ export default async function TrashPage() {
           <article key={article.id} className="p-5 sm:p-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <h2 className="text-xl font-bold">{article.title.ru}</h2>
+                <h2 className="text-xl font-bold">{localize(article.title, 'ru')}</h2>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Удалено {fullDate(article.deletedAt ?? article.updatedAt, 'ru')}
                 </p>
@@ -49,7 +50,7 @@ export default async function TrashPage() {
                   <input type="hidden" name="action" value="purge" />
                   <SubmitButton
                     className="admin-btn-danger min-h-10 px-4 text-sm"
-                    confirmMessage={`Удалить «${article.title.ru}» навсегда? Это действие нельзя отменить.`}
+                    confirmMessage={`Удалить «${localize(article.title, 'ru')}» навсегда? Это действие нельзя отменить.`}
                     pendingLabel="Удаляем..."
                   >
                     <Trash2 aria-hidden className="size-4" strokeWidth={1.8} />

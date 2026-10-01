@@ -46,6 +46,7 @@ if (onVercel) {
   const effects = {
     ADMIN_PANEL_SECRET: 'не будет работать вход в админку',
     CRON_SECRET: 'не будет работать автопубликация по расписанию',
+    ANTHROPIC_API_KEY: 'не будет работать автоматический перевод новостей',
   }
   for (const [name, effect] of Object.entries(effects)) {
     if (!process.env[name]?.trim()) {

@@ -29,7 +29,7 @@ export function PublicSiteHeader({
         <div className="public-container flex min-h-9 items-center justify-between gap-3 text-[11px] text-muted-foreground">
           <span className="min-w-0 truncate tabular-nums first-letter:uppercase">{longDate(lang)}</span>
           <nav
-            aria-label={lang === 'ru' ? 'Служебная навигация' : 'Қызметтік навигация'}
+            aria-label={t(lang, 'serviceNavigation')}
             className="hidden items-center gap-5 md:flex"
           >
             {secondaryNavigation.map((item) => (

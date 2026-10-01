@@ -4,7 +4,12 @@ import { StatusBadge } from '@/components/admin/status-badge'
 import { getCurrentUser } from '@/lib/cms/auth'
 import { canEditArticle } from '@/lib/cms/permissions'
 import { getArticleById, getUsers } from '@/lib/cms/repository'
+import { isTranslationConfigured } from '@/lib/cms/translation'
 import { fullDate } from '@/lib/time'
+import { localize } from '@/lib/i18n'
+
+// Saving with automatic translation calls the Anthropic API and can take a while.
+export const maxDuration = 300
 
 export default async function EditArticlePage({
   params,
@@ -34,7 +39,7 @@ export default async function EditArticlePage({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <StatusBadge status={article.status} />
-          <h1 className="mt-3 text-3xl font-bold tracking-tight">{article.title.ru}</h1>
+          <h1 className="mt-3 text-3xl font-bold tracking-tight">{localize(article.title, 'ru')}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Последнее изменение: {fullDate(article.updatedAt, 'ru')}
           </p>
@@ -45,7 +50,12 @@ export default async function EditArticlePage({
         </p>
       </header>
 
-      <ArticleEditorForm article={article} authors={users} currentUser={user} />
+      <ArticleEditorForm
+        article={article}
+        authors={users}
+        currentUser={user}
+        translationEnabled={isTranslationConfigured()}
+      />
     </div>
   )
 }

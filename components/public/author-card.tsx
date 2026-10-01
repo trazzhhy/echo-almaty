@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { t, type Lang } from '@/lib/i18n'
+import { intlLocales, localize, t, type Lang } from '@/lib/i18n'
 import type { Article, AuthUser } from '@/lib/cms/types'
 import { fullDate } from '@/lib/time'
 
@@ -28,13 +28,13 @@ export function PublicAuthorCard({
         </span>
       </div>
 
-      <p className="mt-3 text-sm leading-7 text-muted-foreground">{author.bio[lang]}</p>
+      <p className="mt-3 text-sm leading-7 text-muted-foreground">{localize(author.bio, lang)}</p>
 
       {author.latestArticle ? (
         <div className="mt-4 border border-border bg-secondary/40 p-3">
           <p className="text-xs text-muted-foreground">{t(lang, 'publishedAt')}</p>
           <p className="mt-1 text-sm font-semibold leading-6">
-            {author.latestArticle.title[lang]}
+            {localize(author.latestArticle.title, lang)}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
             {fullDate(author.latestArticle.publishedAt ?? author.latestArticle.updatedAt, lang)}
@@ -44,7 +44,7 @@ export function PublicAuthorCard({
 
       <div className="mt-5 flex items-center justify-between gap-3">
         <span className="text-sm text-muted-foreground">
-          {author.totalViews.toLocaleString(lang === 'ru' ? 'ru-RU' : 'kk-KZ')} {t(lang, 'views')}
+          {author.totalViews.toLocaleString(intlLocales[lang])} {t(lang, 'views')}
         </span>
         <Link
           href={`/${lang}/author/${author.id}`}

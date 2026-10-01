@@ -32,12 +32,13 @@ export const socialNetworkNames: Record<SocialNetwork, string> = {
 }
 
 export const socialLabels = {
-  title: { ru: 'Мы в соцсетях', kk: 'Біз әлеуметтік желілерде' },
+  title: { ru: 'Мы в соцсетях', kk: 'Біз әлеуметтік желілерде', en: 'Follow us' },
   text: {
     ru: 'Главные новости Алматы — в коротком формате.',
     kk: 'Алматының басты жаңалықтары — қысқа форматта.',
+    en: 'The top Almaty news in a quick, short format.',
   },
-  soon: { ru: 'скоро', kk: 'жақында' },
+  soon: { ru: 'скоро', kk: 'жақында', en: 'soon' },
 } satisfies Record<string, Record<Lang, string>>
 
 export type SocialItem = {

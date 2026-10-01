@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { categories, locales } from '@/lib/i18n'
+import { categories, hasTranslation, locales } from '@/lib/i18n'
 import { getPublicAuthors, getPublishedArticles } from '@/lib/cms/repository'
 import { siteConfig } from '@/lib/site-config'
 
@@ -71,8 +71,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   )
 
+  // Untranslated English articles are noindex duplicates of the Russian page.
   const articlePages = locales.flatMap((lang) =>
-    articles.map((article) => ({
+    articles.filter((article) => hasTranslation(article.title, lang)).map((article) => ({
       url: `${siteConfig.baseUrl}/${lang}/article/${article.slug}`,
       lastModified: new Date(article.updatedAt),
     })),

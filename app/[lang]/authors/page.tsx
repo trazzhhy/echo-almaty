@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { PublicSiteShell } from '@/components/public/site-shell'
 import { getPublicAuthors } from '@/lib/cms/repository'
-import { isLang, t, type Lang } from '@/lib/i18n'
+import { isLang, localize, t, type Lang } from '@/lib/i18n'
 import { fullDate } from '@/lib/time'
 
 export async function generateMetadata({
@@ -15,7 +15,14 @@ export async function generateMetadata({
   const safeLang = isLang(lang) ? lang : 'ru'
 
   return {
-    title: safeLang === 'ru' ? 'Авторы Эхо Алматы' : 'Эхо Алматы авторлары',
+    title: localize(
+      {
+        ru: 'Авторы Эхо Алматы',
+        kk: 'Эхо Алматы авторлары',
+        en: 'Echo Almaty authors',
+      },
+      safeLang,
+    ),
   }
 }
 
@@ -42,16 +49,21 @@ export default async function AuthorsPage({
           </h1>
         </div>
         <p className="max-w-[52ch] text-base leading-7 text-muted-foreground lg:pb-1">
-          {safeLang === 'ru'
-            ? 'Редакторы и журналисты, которые каждый день проверяют факты, объясняют решения и рассказывают истории города.'
-            : 'Күн сайын деректерді тексеріп, шешімдерді түсіндіретін және қала оқиғаларын баяндайтын редакторлар мен журналистер.'}
+          {localize(
+            {
+              ru: 'Редакторы и журналисты, которые каждый день проверяют факты, объясняют решения и рассказывают истории города.',
+              kk: 'Күн сайын деректерді тексеріп, шешімдерді түсіндіретін және қала оқиғаларын баяндайтын редакторлар мен журналистер.',
+              en: 'The editors and journalists who check facts, explain decisions and tell the city’s stories every day.',
+            },
+            safeLang,
+          )}
         </p>
       </header>
 
       <section className="mt-10">
         <div className="mb-3 flex items-end justify-between gap-4">
           <h2 className="font-heading text-2xl font-bold tracking-[-0.02em]">
-            {safeLang === 'ru' ? 'Редакция' : 'Редакция'}
+            {localize({ ru: 'Редакция', kk: 'Редакция', en: 'Newsroom' }, safeLang)}
           </h2>
           <span className="text-sm tabular-nums text-muted-foreground">
             {authors.length} {t(safeLang, 'authors')}
@@ -75,13 +87,13 @@ export default async function AuthorsPage({
                 <p className="mt-1 text-sm text-muted-foreground">{author.role}</p>
               </div>
               <p className="max-w-[58ch] text-sm leading-6 text-muted-foreground">
-                {author.bio[safeLang]}
+                {localize(author.bio, safeLang)}
               </p>
               <div>
                 {author.latestArticle ? (
                   <>
                     <p className="line-clamp-2 text-sm font-medium leading-6">
-                      {author.latestArticle.title[safeLang]}
+                      {localize(author.latestArticle.title, safeLang)}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {fullDate(

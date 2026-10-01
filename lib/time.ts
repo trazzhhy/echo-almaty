@@ -1,7 +1,7 @@
-import type { Lang } from './i18n'
+import { intlLocales, type Lang } from './i18n'
 
 function getLocale(lang: Lang): string {
-  return lang === 'ru' ? 'ru-RU' : 'kk-KZ'
+  return intlLocales[lang]
 }
 
 export function relativeTime(iso: string, lang: Lang): string {

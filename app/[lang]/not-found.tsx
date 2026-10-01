@@ -22,6 +22,9 @@ export default function LangNotFound() {
               <span className="mt-2 block">
                 Материал көшірілген, редакция жасырған немесе мекенжай қате көрсетілген болуы мүмкін.
               </span>
+              <span className="mt-2 block" lang="en">
+                The story may have been moved or removed by the newsroom, or the address may be incorrect.
+              </span>
             </p>
           </section>
 
@@ -42,6 +45,14 @@ export default function LangNotFound() {
                 className="flex items-center justify-between border-b border-background/30 py-3 text-sm font-semibold transition-colors hover:border-background"
               >
                 Басты бетке оралу
+                <span aria-hidden>→</span>
+              </Link>
+              <Link
+                href="/en"
+                lang="en"
+                className="flex items-center justify-between border-b border-background/30 py-3 text-sm font-semibold transition-colors hover:border-background"
+              >
+                Back to the homepage
                 <span aria-hidden>→</span>
               </Link>
             </div>

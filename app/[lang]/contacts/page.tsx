@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Mail, MapPin, Phone } from 'lucide-react'
 import { PublicSiteShell } from '@/components/public/site-shell'
-import { isLang, t, type Lang } from '@/lib/i18n'
+import { isLang, localize, t, type Lang } from '@/lib/i18n'
 
 export async function generateMetadata({
   params,
@@ -38,21 +38,31 @@ export default async function ContactsPage({
           </h1>
         </div>
         <p className="max-w-[52ch] text-base leading-7 text-muted-foreground lg:pb-1">
-          {safeLang === 'ru'
-            ? 'Присылайте новости, уточнения и предложения. Для рекламы и партнёрских проектов работает отдельная линия.'
-            : 'Жаңалықтар, нақтылаулар мен ұсыныстарды жіберіңіз. Жарнама және серіктестік жобалар үшін жеке байланыс желісі бар.'}
+          {localize(
+            {
+              ru: 'Присылайте новости, уточнения и предложения. Для рекламы и партнёрских проектов работает отдельная линия.',
+              kk: 'Жаңалықтар, нақтылаулар мен ұсыныстарды жіберіңіз. Жарнама және серіктестік жобалар үшін жеке байланыс желісі бар.',
+              en: 'Send us news tips, corrections and suggestions. Advertising and partnership enquiries have a dedicated line.',
+            },
+            safeLang,
+          )}
         </p>
       </header>
 
       <div className="mt-8 grid border border-foreground/20 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
         <section className="flex min-h-[390px] flex-col bg-foreground p-6 text-background sm:p-8 lg:p-10">
           <p className="text-sm text-background/60">
-            {safeLang === 'ru' ? 'Главный контакт' : 'Негізгі байланыс'}
+            {localize({ ru: 'Главный контакт', kk: 'Негізгі байланыс', en: 'Main contact' }, safeLang)}
           </p>
           <h2 className="mt-4 max-w-2xl font-heading text-[clamp(2rem,5vw,4.5rem)] font-bold leading-[0.98] tracking-[-0.035em] text-balance">
-            {safeLang === 'ru'
-              ? 'Есть важная история для города?'
-              : 'Қала үшін маңызды оқиға бар ма?'}
+            {localize(
+              {
+                ru: 'Есть важная история для города?',
+                kk: 'Қала үшін маңызды оқиға бар ма?',
+                en: 'Have a story that matters to the city?',
+              },
+              safeLang,
+            )}
           </h2>
           <a
             href="mailto:info@echoalmaty.kz"
@@ -66,7 +76,7 @@ export default async function ContactsPage({
         <div className="divide-y divide-foreground/20">
           <section className="p-6 sm:p-8">
             <h2 className="font-heading text-2xl font-bold tracking-[-0.02em]">
-              {safeLang === 'ru' ? 'Редакция' : 'Редакция'}
+              {localize({ ru: 'Редакция', kk: 'Редакция', en: 'Newsroom' }, safeLang)}
             </h2>
             <div className="mt-6 space-y-5 text-sm">
               <a
@@ -78,14 +88,28 @@ export default async function ContactsPage({
               </a>
               <p className="flex items-center gap-3">
                 <MapPin aria-hidden className="size-4 text-primary" strokeWidth={1.7} />
-                {safeLang === 'ru' ? 'Астана, Казахстан' : 'Астана, Қазақстан'}
+                {localize(
+                  {
+                    ru: 'Астана, Казахстан',
+                    kk: 'Астана, Қазақстан',
+                    en: 'Astana, Kazakhstan',
+                  },
+                  safeLang,
+                )}
               </p>
             </div>
           </section>
 
           <section className="p-6 sm:p-8">
             <h2 className="font-heading text-2xl font-bold tracking-[-0.02em]">
-              {safeLang === 'ru' ? 'Реклама и партнёрства' : 'Жарнама және серіктестік'}
+              {localize(
+                {
+                  ru: 'Реклама и партнёрства',
+                  kk: 'Жарнама және серіктестік',
+                  en: 'Advertising and partnerships',
+                },
+                safeLang,
+              )}
             </h2>
             <div className="mt-6 space-y-4">
               <a
@@ -101,9 +125,14 @@ export default async function ContactsPage({
                 partners@echoalmaty.kz
               </a>
               <p className="pt-2 text-sm leading-6 text-muted-foreground">
-                {safeLang === 'ru'
-                  ? 'Ответим в рабочее время в течение одного дня.'
-                  : 'Жұмыс уақытында бір күн ішінде жауап береміз.'}
+                {localize(
+                  {
+                    ru: 'Ответим в рабочее время в течение одного дня.',
+                    kk: 'Жұмыс уақытында бір күн ішінде жауап береміз.',
+                    en: 'We reply within one business day.',
+                  },
+                  safeLang,
+                )}
               </p>
             </div>
           </section>

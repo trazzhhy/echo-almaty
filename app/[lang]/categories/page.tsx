@@ -17,7 +17,14 @@ export async function generateMetadata({
   const safeLang = isLang(lang) ? lang : 'ru'
 
   return {
-    title: safeLang === 'ru' ? 'Категории Эхо Алматы' : 'Эхо Алматы санаттары',
+    title: localize(
+      {
+        ru: 'Категории Эхо Алматы',
+        kk: 'Эхо Алматы санаттары',
+        en: 'Echo Almaty categories',
+      },
+      safeLang,
+    ),
   }
 }
 
@@ -42,12 +49,24 @@ export default async function CategoriesPage({
       <header className="border-b border-foreground/20 pb-7">
         <p className="text-sm font-medium text-primary">{t(safeLang, 'categoriesPage')}</p>
         <h1 className="mt-2 max-w-4xl font-heading text-[clamp(2.25rem,5vw,4.75rem)] font-bold leading-[0.98] tracking-[-0.035em] text-balance">
-          {safeLang === 'ru' ? 'Темы, которые формируют повестку' : 'Күн тәртібін қалыптастыратын тақырыптар'}
+          {localize(
+            {
+              ru: 'Темы, которые формируют повестку',
+              kk: 'Күн тәртібін қалыптастыратын тақырыптар',
+              en: 'The topics shaping the agenda',
+            },
+            safeLang,
+          )}
         </h1>
         <p className="mt-5 max-w-[64ch] text-base leading-7 text-muted-foreground">
-          {safeLang === 'ru'
-            ? 'Новости, решения и события собраны по редакционным рубрикам. Выберите тему, чтобы открыть полную ленту.'
-            : 'Жаңалықтар, шешімдер мен оқиғалар редакциялық санаттар бойынша жинақталған. Толық лентаны ашу үшін тақырыпты таңдаңыз.'}
+          {localize(
+            {
+              ru: 'Новости, решения и события собраны по редакционным рубрикам. Выберите тему, чтобы открыть полную ленту.',
+              kk: 'Жаңалықтар, шешімдер мен оқиғалар редакциялық санаттар бойынша жинақталған. Толық лентаны ашу үшін тақырыпты таңдаңыз.',
+              en: 'News, decisions and events, organised by editorial section. Choose a topic to open its full feed.',
+            },
+            safeLang,
+          )}
         </p>
       </header>
 
@@ -111,10 +130,17 @@ export default async function CategoriesPage({
       <section className="mt-12">
         <div className="mb-4 flex items-end justify-between gap-5 border-b border-foreground/20 pb-3">
           <h2 className="font-heading text-2xl font-bold tracking-[-0.02em]">
-            {safeLang === 'ru' ? 'Основные темы' : 'Негізгі тақырыптар'}
+            {localize({ ru: 'Основные темы', kk: 'Негізгі тақырыптар', en: 'Main topics' }, safeLang)}
           </h2>
           <span className="hidden text-xs text-muted-foreground sm:block">
-            {safeLang === 'ru' ? 'Последнее обновление рубрик' : 'Санаттардың соңғы жаңартылуы'}
+            {localize(
+              {
+                ru: 'Последнее обновление рубрик',
+                kk: 'Санаттардың соңғы жаңартылуы',
+                en: 'Latest section updates',
+              },
+              safeLang,
+            )}
           </span>
         </div>
 
@@ -164,7 +190,14 @@ export default async function CategoriesPage({
       {formats.length > 0 ? (
         <section className="mt-12">
           <h2 className="mb-4 font-heading text-2xl font-bold tracking-[-0.02em]">
-            {safeLang === 'ru' ? 'Форматы редакции' : 'Редакция форматтары'}
+            {localize(
+              {
+                ru: 'Форматы редакции',
+                kk: 'Редакция форматтары',
+                en: 'Newsroom formats',
+              },
+              safeLang,
+            )}
           </h2>
           <div className="grid border border-foreground/20 md:grid-cols-2 md:divide-x md:divide-foreground/20">
             {formats.map((summary, index) => (

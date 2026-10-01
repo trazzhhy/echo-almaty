@@ -1,25 +1,29 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { Manrope, Roboto, Roboto_Condensed } from 'next/font/google'
+import localFont from 'next/font/local'
 import { headers } from 'next/headers'
+import { defaultLang, isLang } from '@/lib/i18n'
 import { siteConfig } from '@/lib/site-config'
 import './globals.css'
 
-const roboto = Roboto({
-  subsets: ['latin', 'cyrillic'],
-  weight: ['400', '500', '700'],
+// Self-hosted so builds never depend on reaching Google Fonts. Files in
+// app/fonts are the Google Fonts variable fonts limited to the weights below
+// and to latin, latin-ext, cyrillic and cyrillic-ext (Kazakh letters).
+const roboto = localFont({
+  src: './fonts/Roboto-Variable.woff2',
+  weight: '400 700',
   variable: '--font-roboto',
 })
 
-const robotoCondensed = Roboto_Condensed({
-  subsets: ['latin', 'cyrillic'],
-  weight: ['500', '600', '700'],
+const robotoCondensed = localFont({
+  src: './fonts/RobotoCondensed-Variable.woff2',
+  weight: '500 700',
   variable: '--font-roboto-condensed',
 })
 
-const manrope = Manrope({
-  subsets: ['latin', 'cyrillic'],
-  weight: ['700', '800'],
+const manrope = localFont({
+  src: './fonts/Manrope-Variable.woff2',
+  weight: '700 800',
   variable: '--font-masthead',
 })
 
@@ -63,7 +67,8 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   const headerList = await headers()
-  const lang = headerList.get('x-echo-almaty-lang') === 'kk' ? 'kk' : 'ru'
+  const headerLang = headerList.get('x-echo-almaty-lang') ?? ''
+  const lang = isLang(headerLang) ? headerLang : defaultLang
 
   return (
     <html

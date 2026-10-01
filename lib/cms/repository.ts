@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import type { Article as DbArticle, AuditEntry as DbAuditEntry, Prisma, Subscriber as DbSubscriber, User as DbUser } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
-import { categories, getCategoryBySlug, localize, type CategorySlug, type Lang, type LocalizedText } from '@/lib/i18n'
+import { categories, getCategoryBySlug, locales, localize, type CategorySlug, type Lang, type LocalizedText } from '@/lib/i18n'
 import { normalizeStoredCategories } from './categories'
 import { ensureDatabaseBootstrappedFromSnapshot } from './db-sync'
 import type {
@@ -14,6 +14,7 @@ import type {
   Subscriber,
   User,
 } from './types'
+import type { ArticleTexts } from './translation'
 
 export type PublicArticleSort = 'newest' | 'oldest' | 'popular'
 export type PopularWindow = '24h' | '7d'
@@ -34,6 +35,12 @@ const VIEW_DEDUP_WINDOW_MS = 6 * 60 * 60 * 1000
 
 function normalizeText(value: string): string {
   return value.trim()
+}
+
+function normalizeLocalizedText(value: Partial<LocalizedText>): LocalizedText {
+  return Object.fromEntries(
+    locales.map((lang) => [lang, normalizeText(value[lang] ?? '')]),
+  ) as LocalizedText
 }
 
 function normalizeTags(values: string[]): string[] {
@@ -124,12 +131,11 @@ function getSearchableText(article: Article, users: User[], lang: Lang) {
     .join(' ')
 
   return [
-    article.title.ru,
-    article.title.kk,
-    article.excerpt.ru,
-    article.excerpt.kk,
-    article.body.ru,
-    article.body.kk,
+    ...locales.flatMap((item) => [
+      article.title[item],
+      article.excerpt[item],
+      article.body[item],
+    ]),
     article.tags.join(' '),
     categoryNames,
     author?.name ?? '',
@@ -204,10 +210,12 @@ function toLocalizedText(value: Prisma.JsonValue): LocalizedText {
       ? (value as Record<string, unknown>)
       : null
 
-  return {
-    ru: typeof objectValue?.ru === 'string' ? objectValue.ru : '',
-    kk: typeof objectValue?.kk === 'string' ? objectValue.kk : '',
-  }
+  return Object.fromEntries(
+    locales.map((lang) => [
+      lang,
+      typeof objectValue?.[lang] === 'string' ? objectValue[lang] : '',
+    ]),
+  ) as LocalizedText
 }
 
 function toIso(value?: Date | null) {
@@ -219,10 +227,7 @@ function toDate(value?: string | null) {
 }
 
 function toDbLocalizedText(value: LocalizedText): Prisma.InputJsonValue {
-  return {
-    ru: normalizeText(value.ru),
-    kk: normalizeText(value.kk),
-  }
+  return normalizeLocalizedText(value)
 }
 
 function toWorkflowStatus(value: Article['previousStatus']) {
@@ -449,7 +454,7 @@ export async function promoteScheduledArticles(source: PromoteScheduledSource = 
           action: 'scheduled_publish',
           actorId: null,
           actorName: source === 'cron' ? 'Scheduler' : 'Runtime',
-          summary: `${getEntitySummary(toLocalizedText(article.title).ru)}: материал автоматически опубликован по расписанию.`,
+          summary: `${getEntitySummary(localize(toLocalizedText(article.title), 'ru'))}: материал автоматически опубликован по расписанию.`,
           timestamp: now,
         },
       }),
@@ -878,7 +883,7 @@ export async function saveArticle(
   const existing = input.id ? await getArticleById(input.id) : null
 
   const slug = await ensureUniqueArticleSlug(
-    input.slug || input.title.ru || input.title.kk,
+    input.slug || input.title.ru || input.title.kk || input.title.en,
     existing?.id,
   )
 
@@ -896,26 +901,11 @@ export async function saveArticle(
   const nextArticle: Article = {
     id: existing?.id ?? randomUUID(),
     slug,
-    title: {
-      ru: normalizeText(input.title.ru),
-      kk: normalizeText(input.title.kk),
-    },
-    excerpt: {
-      ru: normalizeText(input.excerpt.ru),
-      kk: normalizeText(input.excerpt.kk),
-    },
-    body: {
-      ru: normalizeText(input.body.ru),
-      kk: normalizeText(input.body.kk),
-    },
-    seoTitle: {
-      ru: normalizeText(input.seoTitle.ru),
-      kk: normalizeText(input.seoTitle.kk),
-    },
-    seoDescription: {
-      ru: normalizeText(input.seoDescription.ru),
-      kk: normalizeText(input.seoDescription.kk),
-    },
+    title: normalizeLocalizedText(input.title),
+    excerpt: normalizeLocalizedText(input.excerpt),
+    body: normalizeLocalizedText(input.body),
+    seoTitle: normalizeLocalizedText(input.seoTitle),
+    seoDescription: normalizeLocalizedText(input.seoDescription),
     mainImage: input.mainImage,
     gallery: input.gallery,
     videoUrls: input.videoUrls,
@@ -997,7 +987,7 @@ export async function saveArticle(
     action: nextStatus,
     actorId: actor.id,
     actorName: actor.name,
-    summary: `${getEntitySummary(nextArticle.title.ru)}: статус изменен на ${nextStatus}.`,
+    summary: `${getEntitySummary(localize(nextArticle.title, 'ru'))}: статус изменен на ${nextStatus}.`,
     timestamp: new Date().toISOString(),
   }
 
@@ -1121,7 +1111,7 @@ export async function updateArticleState(
       action,
       actorId: actor.id,
       actorName: actor.name,
-      summary: `${getEntitySummary(article.title.ru)}: действие ${action}.`,
+      summary: `${getEntitySummary(localize(article.title, 'ru'))}: действие ${action}.`,
       timestamp: new Date(),
     },
   })
@@ -1172,6 +1162,50 @@ export async function saveNewsletterSubscriber(email: string) {
   ])
 
   return { ok: true, message: 'subscribed' as const }
+}
+
+/**
+ * Stores machine translations for an article. Skips the write (returns false)
+ * if the article changed since `revision` was read, so a concurrent edit in
+ * the admin is never overwritten.
+ */
+export async function saveArticleTranslations(
+  article: Pick<Article, 'id' | 'revision'>,
+  texts: ArticleTexts,
+  langs: Lang[],
+) {
+  const now = new Date()
+  const updated = await prisma.article.updateMany({
+    where: { id: article.id, revision: article.revision },
+    data: {
+      title: toDbLocalizedText(texts.title),
+      excerpt: toDbLocalizedText(texts.excerpt),
+      body: toDbLocalizedText(texts.body),
+      seoTitle: toDbLocalizedText(texts.seoTitle),
+      seoDescription: toDbLocalizedText(texts.seoDescription),
+      updatedAt: now,
+      revision: article.revision + 1,
+    },
+  })
+
+  if (updated.count === 0) {
+    return false
+  }
+
+  await prisma.auditEntry.create({
+    data: {
+      id: randomUUID(),
+      entityType: 'article',
+      entityId: article.id,
+      action: 'translated',
+      actorId: null,
+      actorName: 'Auto-translate',
+      summary: `${getEntitySummary(localize(texts.title, 'ru'))}: добавлен перевод (${langs.join(', ')}).`,
+      timestamp: now,
+    },
+  })
+
+  return true
 }
 
 export async function saveUser(
