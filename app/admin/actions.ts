@@ -3,7 +3,15 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { categories, type CategorySlug } from '@/lib/i18n'
-import { hashPassword, authenticateUser, clearSession, getCurrentUser, setSession } from '@/lib/cms/auth'
+import {
+  authenticateUser,
+  clearSession,
+  getCurrentUser,
+  hashPassword,
+  isPublicDemoPassword,
+  setSession,
+} from '@/lib/cms/auth'
+import { isProduction } from '@/lib/env'
 import {
   canChangeOwnership,
   canCreateNews,
@@ -128,6 +136,16 @@ export async function loginAction(
 ): Promise<AdminFormState> {
   const email = String(formData.get('email') ?? '')
   const password = String(formData.get('password') ?? '')
+
+  if (isProduction() && isPublicDemoPassword(password)) {
+    return {
+      status: 'error',
+      message:
+        'Демо-пароли опубликованы в README, поэтому на сайте они отключены. Администратор входит ' +
+        'паролем из переменной ADMIN_BOOTSTRAP_PASSWORD (Vercel → Settings → Environment Variables) ' +
+        'и затем задаёт новые пароли в разделе «Пользователи».',
+    }
+  }
 
   const user = await authenticateUser(email, password)
   if (!user) {
@@ -315,6 +333,20 @@ export async function saveUserAction(
     return {
       status: 'error',
       message: 'Пользователь с таким e-mail уже существует.',
+    }
+  }
+
+  if (password && password.length < 8) {
+    return {
+      status: 'error',
+      message: 'Пароль должен быть не короче 8 символов.',
+    }
+  }
+
+  if (password && isProduction() && isPublicDemoPassword(password)) {
+    return {
+      status: 'error',
+      message: 'Этот пароль опубликован в README проекта. Придумайте другой.',
     }
   }
 

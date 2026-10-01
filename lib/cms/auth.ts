@@ -2,7 +2,7 @@ import { cookies } from 'next/headers'
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
 import type { AuthUser, Role, User } from './types'
 import { getUserById, getUserByEmail } from './repository'
-import { getAdminPanelSecret } from '@/lib/env'
+import { getAdminPanelSecret, getOptionalEnv, isProduction } from '@/lib/env'
 
 const SESSION_COOKIE = 'echo_almaty_admin_session'
 const SESSION_TTL_SECONDS = 60 * 60 * 12
@@ -109,9 +109,48 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   return sanitizeUser(user)
 }
 
+// Demo-account passwords from the seed data. They are published in the README
+// (and the repository is public), so they must never grant access in production.
+const PUBLIC_DEMO_PASSWORDS = ['admin123', 'editor123', 'author123', 'moderator123']
+
+export function isPublicDemoPassword(password: string) {
+  return PUBLIC_DEMO_PASSWORDS.includes(password)
+}
+
+function hasPublicDemoPassword(user: User) {
+  return PUBLIC_DEMO_PASSWORDS.some((password) => verifyPassword(password, user.passwordHash))
+}
+
+function safeEqual(left: string, right: string) {
+  const a = Buffer.from(left)
+  const b = Buffer.from(right)
+  return a.length === b.length && timingSafeEqual(a, b)
+}
+
+/**
+ * One-time way into a fresh production install: while an admin account still
+ * has its demo password, ADMIN_BOOTSTRAP_PASSWORD (a private Vercel env var)
+ * logs it in instead. Once the password is changed this stops working.
+ */
+function isBootstrapLogin(user: User, password: string) {
+  const bootstrapPassword = getOptionalEnv('ADMIN_BOOTSTRAP_PASSWORD')
+  return Boolean(
+    bootstrapPassword &&
+      bootstrapPassword.length >= 12 &&
+      user.role === 'admin' &&
+      safeEqual(password, bootstrapPassword) &&
+      hasPublicDemoPassword(user),
+  )
+}
+
 export async function authenticateUser(email: string, password: string) {
   const user = await getUserByEmail(email)
   if (!user || !user.active) return null
+
+  if (isProduction()) {
+    if (isPublicDemoPassword(password)) return null
+    if (isBootstrapLogin(user, password)) return user
+  }
 
   if (!verifyPassword(password, user.passwordHash)) {
     return null

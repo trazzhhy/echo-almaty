@@ -3,6 +3,9 @@ import { categories, locales } from '@/lib/i18n'
 import { getPublicAuthors, getPublishedArticles } from '@/lib/cms/repository'
 import { siteConfig } from '@/lib/site-config'
 
+// Rebuild hourly so newly published articles appear without a redeploy.
+export const revalidate = 3600
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [articles, authors] = await Promise.all([
     getPublishedArticles(),
